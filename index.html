@@ -1,0 +1,2015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Org Structure Visualizer</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  color: #111827;
+  background: #f5f5f5;
+}
+header {
+  padding: 10px 14px;
+  background: #111827;
+  color: white;
+}
+header h1 { margin: 0 0 4px; font-size: 16px; }
+header p { margin: 0; font-size: 11px; color: #d1d5db; }
+main { padding: 10px 14px 24px; }
+button {
+  border: 1px solid #6b7280;
+  background: #e5e7eb;
+  color: #111827;
+  padding: 5px 9px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: bold;
+}
+button:hover { background: #d1d5db; }
+button.primary { background: #2563eb; color: white; border-color: #1d4ed8; }
+button.primary:hover { background: #1d4ed8; }
+button.secondary { background: #ffffff; border-color: #d1d5db; color: #374151; }
+
+.top-upload-download {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 12px;
+  align-items: stretch;
+  margin-bottom: 12px;
+}
+.upload-panel, .download-panel {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-left: 8px solid #334155;
+  border-radius: 6px;
+  padding: 12px;
+}
+.upload-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.download-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.upload-title {
+  font-weight: bold;
+  font-size: 14px;
+  color: #111827;
+  margin-bottom: 3px;
+}
+.upload-subtitle {
+  color: #4b5563;
+  font-size: 12px;
+}
+.visible-file-input {
+  display: block;
+  border: 1px solid #9ca3af;
+  background: #f8fafc;
+  padding: 7px;
+  border-radius: 6px;
+  min-width: 280px;
+}
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.stat {
+  display: inline-block;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 4px;
+  padding: 4px 7px;
+  font-weight: bold;
+}
+.stat.ok { border-color: #22c55e; color: #166534; background: #f0fdf4; }
+.stat.bad { border-color: #ef4444; color: #991b1b; background: #fef2f2; }
+.gl-card-panel {
+  background: white;
+  border: 1px solid #d1d5db;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+.gl-card-title {
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+.gl-card-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+.gl-card {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px;
+  background: #f9fafb;
+}
+.gl-card-name { font-weight: bold; margin-bottom: 5px; }
+.gl-card-hc { font-size: 22px; font-weight: bold; line-height: 1; }
+.gl-card-sub { color: #4b5563; margin: 4px 0 6px; }
+.gl-card-section-label {
+  font-size: 9px;
+  font-weight: bold;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin: 6px 0 3px;
+}
+.workstream-section {
+  background: white;
+  border: 1px solid #d1d5db;
+  margin-bottom: 12px;
+}
+.workstream-header {
+  background: #f3f4f6;
+  color: #111827;
+  padding: 10px;
+  font-weight: normal;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  border-bottom: 1px solid #d1d5db;
+  border-left: 8px solid #334155;
+  align-items: center;
+}
+.ws-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #111827;
+  margin-bottom: 6px;
+}
+.workflow-bracket { color: #6b7280; font-weight: normal; font-size: 13px; }
+.summary-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+.summary-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #374151;
+  margin-right: 2px;
+}
+.workstream-actions {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  white-space: nowrap;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  border-radius: 6px;
+  padding: 7px 8px;
+}
+.table-wrap { overflow-x: auto; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 1280px;
+}
+th, td {
+  border: 1px solid #e5e7eb;
+  padding: 5px;
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  background: #e5e7eb;
+  font-size: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+th.sortable { cursor: pointer; }
+tr.dragging { opacity: .45; }
+tr.drop-target { outline: 2px solid #2563eb; outline-offset: -2px; }
+.count { text-align: center; font-variant-numeric: tabular-nums; }
+.tl-name { font-weight: bold; white-space: nowrap; }
+.action-cell { white-space: nowrap; }
+.alerts-cell { white-space: nowrap; overflow-x: auto; max-width: 0; }
+.action-cell button { margin-right: 4px; }
+tr.person-subrow { background: #f8fafc; }
+tr.person-subrow td { border-top: none; }
+tr.alert-details-row td { border-top: none; }
+.alert-detail-cell { padding: 6px 8px; white-space: pre-line; }
+.alerts-cell .tag { cursor: pointer; }
+.person-name { padding-left: 18px; color: #374151; }
+.toggle-people-btn { cursor: pointer; }
+select {
+  width: 100%;
+  padding: 3px 5px;
+  border: 1px solid #9ca3af;
+  border-radius: 4px;
+  background: white;
+  font-size: 11px;
+}
+.tag {
+  display: inline-block;
+  border: 1.5px solid #d1d5db;
+  background: #f9fafb;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin: 0 4px 4px 0;
+  white-space: nowrap;
+  font-weight: bold;
+}
+.role-operator { background: #f0fdf4; border-color: #86efac; color: #166534; }
+.role-buffer { background: #fff7ed; border-color: #fdba74; color: #9a3412; }
+.role-plain { background: none; border-color: #d1d5db; color: #111827; }
+.workflow-tag { background: #eef2ff; border-color: #c7d2fe; }
+/* Location colors: Option B - muted business tones with lighter fills */
+.loc-1 { background: #f0f9ff; border-color: #38bdf8; color: #075985; }
+.loc-2 { background: #f8fafc; border-color: #94a3b8; color: #334155; }
+.wfh { background: #fdf2f8; border-color: #f9a8d4; color: #831843; }
+.loc-3 { background: #f5f3ff; border-color: #a78bfa; color: #5b21b6; }
+.loc-4 { background: #fffbeb; border-color: #f59e0b; color: #92400e; }
+.loc-5 { background: #fafaf9; border-color: #a8a29e; color: #44403c; }
+.loc-6 { background: #eff6ff; border-color: #60a5fa; color: #1e40af; }
+.loc-7 { background: #fff7ed; border-color: #fb923c; color: #9a3412; }
+.loc-other { background: #f9fafb; border-color: #9ca3af; color: #374151; }
+.empty-state {
+  background: #ffffff;
+  border: 1px dashed #9ca3af;
+  border-radius: 6px;
+  padding: 24px;
+  text-align: center;
+  color: #4b5563;
+  margin-top: 12px;
+}
+.empty-state h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: #111827;
+}
+dialog {
+  border: 1px solid #9ca3af;
+  border-radius: 8px;
+  padding: 0;
+  min-width: 420px;
+}
+dialog::backdrop { background: rgba(0,0,0,.35); }
+.modal-header { background: #111827; color: white; padding: 10px; font-weight: bold; }
+.modal-body { padding: 12px; }
+.modal-row { margin-bottom: 10px; }
+.modal-row label { display: block; font-weight: bold; margin-bottom: 3px; }
+.modal-actions { padding: 10px; border-top: 1px solid #e5e7eb; text-align: right; }
+.modal-actions button { margin-left: 6px; }
+@media (max-width: 1100px) {
+  .gl-card-grid { grid-template-columns: repeat(3, 1fr); }
+  .top-upload-download { grid-template-columns: 1fr; }
+  .upload-panel, .download-panel { flex-wrap: wrap; }
+}
+
+.pm-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+@media (max-width: 900px) {
+  .pm-card-grid { grid-template-columns: 1fr; }
+}
+
+.stat-card-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+@media (max-width: 1300px) {
+  .stat-card-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 700px) {
+  .stat-card-grid { grid-template-columns: 1fr; }
+}
+
+
+.tl-details {
+  margin-top: 6px;
+}
+.tl-details summary {
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: bold;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin: 6px 0 3px;
+}
+.tl-details[open] summary {
+  margin-bottom: 5px;
+}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Org Structure Visualizer</h1>
+  <p>Upload a Team List CSV, visualize the PM, GL, TL, Operator, and Buffer structure, make assignment updates, then export using the same rows, columns, and column order as the import.</p>
+</header>
+<main>
+  <section class="top-upload-download">
+    <div class="upload-panel">
+      <div>
+        <div class="upload-title">Load assignment data</div>
+        <div class="upload-subtitle">Supports the original Team List structure and exports back in the same structure.</div>
+        <div id="uploadStatus" style="margin-top:6px; font-weight:bold;">No file loaded yet.</div>
+      </div>
+      <input id="fileUpload" class="visible-file-input" type="file" accept=".csv,text/csv" />
+    </div>
+    <div class="download-panel">
+      <div>
+        <div class="upload-title">Export updates</div>
+        <div class="upload-subtitle">Exports the same rows, columns, and column order as the uploaded CSV.</div>
+      </div>
+      <button id="downloadBtn" class="primary">Download CSV</button>
+    </div>
+  </section>
+
+  <div id="globalStats" class="stats"></div>
+
+  <section class="gl-card-panel">
+    <div class="gl-card-title">PM summary</div>
+    <div id="pmCards" class="pm-card-grid"></div>
+  </section>
+
+  <section class="gl-card-panel">
+    <div class="gl-card-title">GL summary</div>
+    <div id="glCards" class="gl-card-grid"></div>
+  </section>
+
+  <section class="gl-card-panel">
+    <div class="gl-card-title">Operational stats</div>
+    <div id="statCards" class="stat-card-grid"></div>
+  </section>
+
+  <div id="app"></div>
+</main>
+
+<dialog id="splitDialog">
+  <div class="modal-header">Split / Reassign</div>
+  <div class="modal-body">
+    <div id="splitDetails" class="modal-row"></div>
+    <div class="modal-row">
+      <label for="splitCount">Headcount to move</label>
+      <input id="splitCount" type="number" min="1" step="1" />
+    </div>
+    <div class="modal-row">
+      <label for="targetTl">New TL</label>
+      <select id="targetTl"></select>
+    </div>
+  </div>
+  <div class="modal-actions">
+    <button id="cancelSplit">Cancel</button>
+    <button id="confirmSplit" class="primary">Apply</button>
+  </div>
+</dialog>
+
+<script>
+// Workstream split highlighting: GL-only = orange, PM-only = yellow, both = red.
+const SPLIT_COLOR_GL = { border: "#f97316", bg: "#fff7ed" };
+const SPLIT_COLOR_PM = { border: "#eab308", bg: "#fefce8" };
+const SPLIT_COLOR_BOTH = { border: "#ef4444", bg: "#fef2f2" };
+// Unique-per-workstream palette, kept for the PM/GL summary cards (their workstream tags keep
+// their original distinct color instead of the type-based orange/yellow/red used in the table).
+const MULTI_PM_PALETTE = [
+  { border: "#f43f5e", bg: "#fff1f2" },
+  { border: "#f59e0b", bg: "#fffbeb" },
+  { border: "#22c55e", bg: "#f0fdf4" },
+  { border: "#3b82f6", bg: "#eff6ff" },
+  { border: "#a855f7", bg: "#faf5ff" },
+  { border: "#14b8a6", bg: "#f0fdfa" },
+  { border: "#eab308", bg: "#fefce8" },
+  { border: "#ec4899", bg: "#fdf2f8" }
+];
+let TL_CANDIDATES = [];
+// GL/TL/PM candidate lists are fully derived from whatever CSV gets uploaded (see parseAndLoad) —
+// no names are hardcoded here.
+let GL_CANDIDATES = [];
+let PM_CANDIDATES = [];
+let rawRows = [];
+let rawHeaders = [];
+let undoStack = [];
+let lastSourceName = "";
+let people = [];
+let staffRows = [];
+let uploadedBaseline = [];
+let selectedGroupId = null;
+let sortKey = "opLocation";
+let sortDirection = "asc";
+let selectedTlsByWorkstream = {};
+let tlLookup = {};
+let workstreamPmInfo = {};
+let staffRowByName = {};
+let staffRowByEmpId = {};
+let identityResolver = {};
+let expandedAlertIndexByGroup = {};
+let expandedGroupIds = new Set();
+// "Change" tracking compares the ORIGINAL value (captured once, before any edits) against the
+// CURRENT value — so an edit that gets reverted shows 0 changes, and however many edits happen
+// in between, only ever shows one "original → current" line, never a history of every edit.
+let originalRowGl = {};
+let originalRowPm = {};
+let originalPersonGl = {};
+let originalPersonTl = {};
+
+function escapeHtml(value) {
+  return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+}
+function csvEscape(value) {
+  const text = String(value ?? '');
+  if (/[",\n\r]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
+  return text;
+}
+function clean(value) {
+  return String(value ?? '').trim();
+}
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let field = "";
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const next = text[i + 1];
+    if (char === '"' && inQuotes && next === '"') {
+      field += '"';
+      i++;
+    } else if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === "," && !inQuotes) {
+      row.push(field);
+      field = "";
+    } else if ((char === "\n" || char === "\r") && !inQuotes) {
+      if (char === "\r" && next === "\n") i++;
+      row.push(field);
+      if (row.some(v => clean(v) !== "")) rows.push(row);
+      row = [];
+      field = "";
+    } else {
+      field += char;
+    }
+  }
+  row.push(field);
+  if (row.some(v => clean(v) !== "")) rows.push(row);
+  if (!rows.length) return { headers: [], rows: [] };
+  const headers = rows[0].map(h => clean(String(h || "").replace(/^\uFEFF/, "")));
+  const objects = rows.slice(1).map(values => {
+    const obj = {};
+    headers.forEach((h, idx) => obj[h] = values[idx] ?? "");
+    return obj;
+  });
+  return { headers, rows: objects };
+}
+function getValue(obj, names, fallback="") {
+  for (const name of names) {
+    if (Object.prototype.hasOwnProperty.call(obj, name) && clean(obj[name]) !== "") return clean(obj[name]);
+  }
+  return fallback;
+}
+function setIfColumn(obj, possibleNames, value) {
+  for (const name of possibleNames) {
+    if (rawHeaders.includes(name)) {
+      obj[name] = value ?? "";
+      return;
+    }
+  }
+}
+function roleType(role) {
+  const r = clean(role).toLowerCase();
+  if (r === "operator" || r === "op") return "operator";
+  if (r === "buffer") return "buffer";
+  if (r === "tl" || r.includes("team lead") || r.includes("l1")) return "tl";
+  if (r === "gl" || r.includes("group lead")) return "gl";
+  if (r === "pm" || r === "sr. pm" || r.includes("project manager")) return "pm";
+  return r || "other";
+}
+function isAssignableRole(role) {
+  const rt = roleType(role);
+  return rt === "operator" || rt === "buffer";
+}
+function isAlignedRow(item) {
+  const v = clean(item.aligned).toLowerCase();
+  if (!v) return true;
+  if (v.includes("not")) return false;
+  return v.includes("align") || v === "yes" || v === "y" || v === "true";
+}
+function normalizeRow(row, idx) {
+  const role = getValue(row, ["Role", "role", "Type", "type"], "");
+  const rt = roleType(role);
+  const workLocation = getValue(row, ["Work Location", "workLocation", "Working Location"], "");
+  const deliveryCenter = getValue(row, ["Original Delivery Center", "Delivery Center", "deliveryCenter", "Delivery center"], "");
+  const effectiveLocation = getValue(
+    row,
+    ["Effective OP Location", "Effective Location", "effectiveLocation"],
+    workLocation.toUpperCase() === "WFH" ? "WFH" : (deliveryCenter || "Unknown")
+  );
+  // Newer exports drop the fixed TL/GL/PM columns for a generic "L1 = my manager, L2 = their manager"
+  // scheme, so what L1/L2 mean depends on this row's own role (operator/buffer: L1=TL, L2=GL; GL: L1=PM).
+  const l1Name = getValue(row, ["Assigned L1 Name", "L1 Name", "Assigned TL Name", "TL", "tl", "L1"], "Unassigned TL");
+  const l1Email = getValue(row, ["Assigned L1 Email ID", "L1 Email ID", "Assigned TL Email ID", "tlEmail"], "");
+  const l1EmpId = getValue(row, ["L1 Emp ID", "Assigned L1 Emp ID", "Assigned TL Emp ID", "L1-EMP ID"], "");
+  const l2Name = getValue(row, ["L2"], "");
+  const l2EmpId = getValue(row, ["L2- EMP ID", "L2-EMP ID"], "");
+  // GL starts as this person's own raw L2 (or the legacy explicit column), so a disagreement
+  // with the TL's own L1 stays visible instead of being silently overwritten. GL only gets
+  // derived from the TL (applyGlFromTl) when there's no raw value at all, or on a manual
+  // TL reassignment — never automatically overriding an existing raw value.
+  let glName = getValue(row, ["Assigned GL Name", "GL Name", "glName", "Assigned Group Lead", "Group Lead"], "");
+  if (!glName && (rt === "operator" || rt === "buffer")) {
+    glName = l2Name;
+  }
+  const glInfo = getGlInfo(glName);
+  const item = {
+    idx,
+    raw: row,
+    name: getValue(row, ["Name", "name"], ""),
+    email: getValue(row, ["Email ID", "Email", "email"], ""),
+    empId: getValue(row, ["Emp ID", "Employee ID", "empId"], ""),
+    role,
+    designation: getValue(row, ["Designation", "Designation(EW)"], ""),
+    tl: l1Name,
+    tlEmail: l1Email,
+    tlEmpId: l1EmpId,
+    glName,
+    glEmail: getValue(row, ["Assigned GL Email ID", "GL Email ID", "glEmail"], glInfo.email || ""),
+    glEmpId: getValue(row, ["Assigned GL Emp ID", "GL Emp ID", "glEmpId"], glInfo.empId || ""),
+    pmName: getValue(row, ["L2 Name", "PM Name"], ""),
+    pmEmail: getValue(row, ["L2 Email ID", "PM Email ID"], ""),
+    pmEmpId: getValue(row, ["L2 Emp ID", "PM Emp ID"], ""),
+    workflow: getValue(row, ["Primary Workflow", "Workflow", "workflow"], "Unknown Workflow"),
+    workstream: getValue(row, ["Primary Workstream", "Workstream", "workstream"], "Unassigned Workstream"),
+    workLocation,
+    deliveryCenter,
+    effectiveLocation,
+    aligned: getValue(row, ["Aligned", "aligned", "Status"], ""),
+    // This row's own raw L2 value, kept regardless of role — used to derive PM as
+    // "the L2 of whoever this person's TL is" once all rows are loaded.
+    ownL2: l2Name,
+    ownL2EmpId: l2EmpId
+  };
+  // For a GL row, its own L1 is the PM that GL reports to.
+  if (rt === "gl" && l1Name && l1Name !== "Unassigned TL") {
+    item.pmName = item.pmName || l1Name;
+    item.pmEmail = item.pmEmail || l1Email;
+    item.pmEmpId = item.pmEmpId || l1EmpId;
+  }
+  return item;
+}
+function updateRawFromNormalized(item) {
+  const row = item.raw;
+  const rt = roleType(item.role);
+  setIfColumn(row, ["Assigned L1 Name", "L1 Name", "L1"], item.tl);
+  setIfColumn(row, ["Assigned L1 Email ID", "L1 Email ID"], item.tlEmail);
+  setIfColumn(row, ["L1 Emp ID", "Assigned L1 Emp ID", "L1-EMP ID"], item.tlEmpId);
+  setIfColumn(row, ["Assigned GL Name", "GL Name"], item.glName);
+  setIfColumn(row, ["Assigned GL Email ID", "GL Email ID"], item.glEmail);
+  setIfColumn(row, ["Assigned GL Emp ID", "GL Emp ID"], item.glEmpId);
+  if (rt === "operator" || rt === "buffer") {
+    // In the current column scheme, an Operator/Buffer's own L2 field IS their GL.
+    setIfColumn(row, ["L2"], item.glName);
+    setIfColumn(row, ["L2- EMP ID", "L2-EMP ID"], item.glEmpId);
+  }
+  setIfColumn(row, ["L2 Name", "PM Name"], item.pmName);
+  setIfColumn(row, ["L2 Email ID", "PM Email ID"], item.pmEmail);
+  setIfColumn(row, ["L2 Emp ID", "PM Emp ID"], item.pmEmpId);
+  setIfColumn(row, ["Primary Workflow", "Workflow"], item.workflow);
+  setIfColumn(row, ["Primary Workstream", "Workstream"], item.workstream);
+  setIfColumn(row, ["Work Location", "Working Location"], item.workLocation);
+  setIfColumn(row, ["Original Delivery Center", "Delivery Center", "Delivery center"], item.deliveryCenter);
+  setIfColumn(row, ["Effective OP Location", "Effective Location"], getEffectiveLocation(item));
+  setIfColumn(row, ["Aligned", "Status"], item.aligned);
+}
+function uniqueSorted(values) {
+  return [...new Set(values.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
+}
+function locationClass(value) {
+  const v = String(value || "").toLowerCase();
+  if (v === "wfh") return "wfh";
+  if (!v.trim()) return "loc-other";
+  // Any location name gets one of 7 colors from a hash of its name, so the same place
+  // always gets the same color without hardcoding specific locations.
+  let hash = 0;
+  for (let i = 0; i < v.length; i++) hash = (hash * 31 + v.charCodeAt(i)) | 0;
+  return "loc-" + (Math.abs(hash) % 7 + 1);
+}
+// Same hash-based palette as personDotColor, returned as an inline style so a GL tag's color
+// stays consistent wherever that GL's name shows up, without hardcoding real names to classes.
+function glTagStyle(value) {
+  if (!value) return "";
+  const color = personDotColor(value);
+  return ` style="border-color:${color}; color:${color}; background:transparent;"`;
+}
+function roleClass(role) {
+  const rt = roleType(role);
+  if (rt === "buffer") return "role-buffer";
+  return "role-operator";
+}
+function getGlInfo(glName) {
+  if (!glName || glName === "__UNASSIGNED__" || glName === "Unassigned GL") return { name: "Unassigned GL", email: "", empId: "" };
+  return GL_CANDIDATES.find(gl => gl.name === glName) || { name: glName, email: "", empId: "" };
+}
+function rebuildIdentityResolver() {
+  identityResolver = {};
+  staffRows.forEach(row => {
+    if (row.name) identityResolver[row.name.toLowerCase()] = row.name;
+    if (row.email) identityResolver[row.email.toLowerCase()] = row.name || row.email;
+  });
+}
+function resolveIdentity(value) {
+  const v = clean(value);
+  if (!v) return v;
+  return identityResolver[v.toLowerCase()] || v;
+}
+function rebuildStaffRowByName() {
+  staffRowByName = {};
+  staffRows.forEach(row => {
+    if (!row.name) return;
+    const existing = staffRowByName[row.name];
+    if (!existing) { staffRowByName[row.name] = row; return; }
+    // Two different people can share a display name (e.g. an Operator and an unrelated TL with
+    // the same name). When that happens, prefer whichever row is NOT an Operator/Buffer,
+    // since that's who's actually being referenced as someone's manager.
+    if (isAssignableRole(existing.role) && !isAssignableRole(row.role)) {
+      staffRowByName[row.name] = row;
+    }
+  });
+}
+// Emp ID is the true unique identifier — use this instead of name wherever we have an emp ID
+// to look up with, since names collide (multiple real people can share a display name).
+function rebuildStaffRowByEmpId() {
+  staffRowByEmpId = {};
+  // Keyed case-insensitively — "I18414" and "i18414" are the same Emp ID, just typed differently.
+  staffRows.forEach(row => {
+    if (!row.empId) return;
+    const key = row.empId.toUpperCase();
+    if (!staffRowByEmpId[key]) staffRowByEmpId[key] = row;
+  });
+}
+// Flags a broken/missing Emp ID reference for this TL — either the operator's own L1-EMP ID
+// field is blank, or it doesn't correspond to any real Emp ID in the roster. This is exactly
+// what makes name-based resolution unreliable (e.g. two people with the same name).
+function tlEmpIdIssue(tlName, tlEmpId) {
+  if (!tlName || tlName === "Unassigned TL") return null;
+  const byName = staffRowByName[tlName];
+  const onFileId = byName ? (byName.empId || "none on file") : "no record found by name";
+  if (!tlEmpId) return `Operator's L1-EMP ID is blank for TL "${tlName}" (resolved by name only; their own record shows Emp ID "${onFileId}")`;
+  if (!staffRowByEmpId[tlEmpId.toUpperCase()]) return `Operator's L1-EMP ID "${tlEmpId}" for TL "${tlName}" doesn't match any Emp ID in the roster (their own record shows Emp ID "${onFileId}")`;
+  return null;
+}
+// Resolves "this person's own record" preferring emp ID (unambiguous) over name (can collide).
+function findOwnRow(name, empId) {
+  // Only trust the emp-ID match if its name actually matches — a raw row can carry a name and
+  // an emp ID that refer to two different real people (a data-entry mismatch), and blindly
+  // trusting the ID in that case would silently resolve to the wrong person.
+  if (empId) {
+    const byId = staffRowByEmpId[empId.toUpperCase()];
+    if (byId && (!name || byId.name === name)) return byId;
+  }
+  return staffRowByName[name];
+}
+// PM = the L2 of whoever this person's TL is (their immediate manager's own L2 field),
+// not derived from GL — a TL's team can have its own PM independent of their GL's PM.
+function applyPmFromTl(person) {
+  const tlRow = findOwnRow(person.tl, person.tlEmpId);
+  if (!tlRow) {
+    person.pmName = "";
+    person.pmEmail = "";
+    person.pmEmpId = "";
+    return;
+  }
+  // PM is always positional — the TL's own L2, i.e. this person's boss's boss — regardless of
+  // what Type/role label that person happens to carry.
+  const pmName = resolveIdentity(tlRow.ownL2);
+  if (!pmName) {
+    person.pmName = "";
+    person.pmEmail = "";
+    person.pmEmpId = "";
+    return;
+  }
+  const pmOwnRow = findOwnRow(pmName, tlRow.ownL2EmpId);
+  person.pmName = pmName;
+  person.pmEmail = pmOwnRow ? (pmOwnRow.email || "") : "";
+  person.pmEmpId = pmOwnRow ? (pmOwnRow.empId || "") : (tlRow.ownL2EmpId || "");
+}
+// GL = the TL's own L1 (their manager) — mirrors applyPmFromTl, which uses the TL's own L2.
+function applyGlFromTl(person) {
+  const tlRow = findOwnRow(person.tl, person.tlEmpId);
+  const glName = tlRow ? resolveIdentity(tlRow.tl) : "";
+  if (!glName || glName === "Unassigned TL") return;
+  const glOwnRow = findOwnRow(glName, tlRow.tlEmpId);
+  const glInfo = getGlInfo(glName);
+  person.glName = glName;
+  person.glEmail = glOwnRow ? (glOwnRow.email || "") : (glInfo.email || "");
+  person.glEmpId = glOwnRow ? (glOwnRow.empId || "") : (tlRow.tlEmpId || glInfo.empId || "");
+}
+// Flags when a person's own raw L2 disagrees with the GL derived from their TL's own L1 —
+// e.g. the TL's row says GL X, but this specific person's own row still says L2 = Y.
+function personGlMismatch(person) {
+  // Compares this person's own raw L2 against their TL's own raw L1. Once a human has manually
+  // set this person's GL (applyPersonGl/applyRowGl), treat it as rectified and stop flagging —
+  // otherwise a manual fix would never clear the alert, since the raw source data doesn't change.
+  if (person.glManuallySet) return null;
+  const rawL2 = resolveIdentity(person.ownL2);
+  const tlRow = findOwnRow(person.tl, person.tlEmpId);
+  const tlDerivedGl = tlRow ? resolveIdentity(tlRow.tl) : "";
+  if (!rawL2 || !tlDerivedGl || rawL2 === tlDerivedGl) return null;
+  return rawL2;
+}
+function getTlOwnGl(tlName, tlEmpId) {
+  const tlRow = findOwnRow(tlName, tlEmpId);
+  const gl = tlRow ? resolveIdentity(tlRow.tl) : "";
+  return gl && gl !== "Unassigned TL" ? gl : "Unassigned GL";
+}
+// Flags a TL name that doesn't correspond to an actual TL-type record in the roster —
+// e.g. operators pointing to a GL or some other non-TL person as their direct manager.
+function tlStructureMismatch(tlName, tlEmpId) {
+  if (!tlName || tlName === "Unassigned TL") return null;
+  const tlRow = findOwnRow(tlName, tlEmpId);
+  if (!tlRow) return "No matching record found in the roster";
+  if (roleType(tlRow.role) !== "tl") return `Listed as Type="${tlRow.role}", not TL`;
+  return null;
+}
+// Same check one level up: flags when a TL's own L2 doesn't resolve to an actual PM-type
+// record — e.g. the chain breaks because that name is a GL, an AM, or not found at all.
+function pmStructureMismatch(pmName, pmEmpId) {
+  if (!pmName || pmName === "Unassigned PM") return null;
+  const pmRow = findOwnRow(pmName, pmEmpId);
+  if (!pmRow) return "No matching record found in the roster";
+  if (roleType(pmRow.role) !== "pm") return `Listed as Type="${pmRow.role}", not PM`;
+  return null;
+}
+// Same idea, one level down: flags a GL card whose own record isn't actually Type=GL.
+function glStructureMismatch(glName, glEmpId) {
+  if (!glName || glName === "Unassigned GL") return null;
+  const glRow = findOwnRow(glName, glEmpId);
+  if (!glRow) return "No matching record found in the roster";
+  if (roleType(glRow.role) !== "gl") return `Listed as Type="${glRow.role}", not GL`;
+  return null;
+}
+// Orphan check: this row's people are aligned (they're in `people` at all), but their TL's
+// own record is marked not-aligned — the TL may have rolled off while reports stayed active.
+// Generic alignment check for any of the 4 role levels — looks up that person's own record
+// (by emp ID first) and flags it if they're marked not-aligned to the project.
+function alignmentIssue(label, name, empId) {
+  if (!name || name.startsWith("Unassigned")) return null;
+  const ownRow = findOwnRow(name, empId);
+  if (!ownRow) return null;
+  return isAlignedRow(ownRow) ? null : `${label} "${name}" is marked "${ownRow.aligned || "Not a part of the Project"}"`;
+}
+// Captures the pre-edit value the first time a field is touched. Later edits don't overwrite
+// this, so it always stays the true original for the "original → current" comparison.
+function captureOriginal(store, key, currentValue) {
+  if (!(key in store)) store[key] = currentValue;
+}
+const UNDO_STACK_LIMIT = 50;
+function pushUndoSnapshot() {
+  undoStack.push(structuredClone(rawRows));
+  if (undoStack.length > UNDO_STACK_LIMIT) undoStack.shift();
+}
+function undo() {
+  if (!undoStack.length) return;
+  rawRows = undoStack.pop();
+  loadFromRawRows(lastSourceName);
+  document.getElementById("uploadStatus").textContent = "Undid last change.";
+}
+function applyPersonTl(personIdx, tlName) {
+  const person = people.find(p => p.idx === Number(personIdx));
+  if (!person) return;
+  pushUndoSnapshot();
+  captureOriginal(originalPersonTl, person.idx, person.tl);
+  const tlInfo = getTlLocation(tlName);
+  person.tl = tlName;
+  person.tlEmail = tlInfo.email || "";
+  person.tlEmpId = tlInfo.empId || "";
+  applyGlFromTl(person);
+  person.glManuallySet = true;
+  applyPmFromTl(person);
+  updateRawFromNormalized(person);
+  render();
+}
+
+// One shared name → color mapping, used for both L1 and L2 dropdowns — a name gets the same
+// color everywhere, regardless of whether it shows up as a GL or a PM. Colors are assigned by
+// hashing the name against a fixed palette (not by matching specific real names), so this works
+// for whatever GLs/PMs happen to be in the uploaded data.
+const PERSON_COLOR_PALETTE = ["#3b82f6", "#f97316", "#8b5cf6", "#14b8a6", "#111827", "#84cc16", "#ca8a04", "#0891b2", "#e11d48", "#7c3aed", "#059669", "#be185d"];
+function personDotColor(name) {
+  const v = String(name || "").trim();
+  if (!v) return "#64748b";
+  let hash = 0;
+  for (let i = 0; i < v.length; i++) hash = (hash * 31 + v.charCodeAt(i)) | 0;
+  return PERSON_COLOR_PALETTE[Math.abs(hash) % PERSON_COLOR_PALETTE.length];
+}
+function stripeDropdownStyle(name) {
+  if (!name || name.startsWith("Unassigned")) return "";
+  return `border-left: 5px solid ${personDotColor(name)}; padding-left: 6px;`;
+}
+function glOptions(selectedName) {
+  const current = selectedName || "Unassigned GL";
+  const options = ['<option value="Unassigned GL">Unassigned GL</option>']
+    .concat(GL_CANDIDATES.map(gl => `<option value="${escapeHtml(gl.name)}">${escapeHtml(gl.name)}</option>`));
+  let html = options.join("");
+  if (current && !GL_CANDIDATES.some(gl => gl.name === current) && current !== "Unassigned GL") {
+    html = `<option value="${escapeHtml(current)}">${escapeHtml(current)}</option>` + html;
+  }
+  return html.replace(`value="${escapeHtml(current)}"`, `value="${escapeHtml(current)}" selected`);
+}
+function tlOptions(selectedName) {
+  const current = selectedName || "Unassigned TL";
+  const options = ['<option value="Unassigned TL">Unassigned TL</option>']
+    .concat(TL_CANDIDATES.map(tl => `<option value="${escapeHtml(tl.name)}">${escapeHtml(tl.name)}</option>`));
+  let html = options.join("");
+  if (current && !TL_CANDIDATES.some(tl => tl.name === current) && current !== "Unassigned TL") {
+    html = `<option value="${escapeHtml(current)}">${escapeHtml(current)}</option>` + html;
+  }
+  return html.replace(`value="${escapeHtml(current)}"`, `value="${escapeHtml(current)}" selected`);
+}
+function getPmInfo(pmName) {
+  if (!pmName || pmName === "Unassigned PM") return { name: "Unassigned PM", email: "", empId: "" };
+  return PM_CANDIDATES.find(pm => pm.name === pmName) || { name: pmName, email: "", empId: "" };
+}
+function pmOptions(selectedName) {
+  const current = selectedName || "Unassigned PM";
+  const options = ['<option value="Unassigned PM">Unassigned PM</option>']
+    .concat(PM_CANDIDATES.map(pm => `<option value="${escapeHtml(pm.name)}">${escapeHtml(pm.name)}</option>`));
+  let html = options.join("");
+  if (current && !PM_CANDIDATES.some(pm => pm.name === current) && current !== "Unassigned PM") {
+    html = `<option value="${escapeHtml(current)}">${escapeHtml(current)}</option>` + html;
+  }
+  return html.replace(`value="${escapeHtml(current)}"`, `value="${escapeHtml(current)}" selected`);
+}
+function renderRowPmDropdown(row) {
+  return `<select class="row-pm-select" style="${stripeDropdownStyle(row.pm)}" data-group-id="${escapeHtml(row.groupId)}">${pmOptions(row.pm)}</select>`;
+}
+// Manual L1/L2 edits from the row dropdowns apply only to this specific row (this workflow +
+// workstream + TL + location + role slot), not TL-wide — a row-level override stored by groupId,
+// which wins over the TL's raw-data default (getTlOwnGl / the TL's own L2) until cleared.
+// L1/L2 dropdowns on a row edit that TL's actual record — so the change shows up on every row
+// for that TL (not just the one clicked) and persists correctly to the exported CSV, since GL/PM
+// are read from the TL's own raw data, not something distinct per row.
+function applyRowPm(groupId, pmName) {
+  const row = buildRows().find(r => r.groupId === groupId);
+  if (!row) return;
+  const tlRow = findOwnRow(row.tl, row.tlEmpId);
+  if (!tlRow) return;
+  pushUndoSnapshot();
+  captureOriginal(originalRowPm, tlRow.empId || row.tl, row.pm);
+  const pmInfo = getPmInfo(pmName);
+  const pmOwnRow = staffRowByName[pmName];
+  tlRow.ownL2 = pmInfo.name;
+  tlRow.ownL2EmpId = pmOwnRow ? (pmOwnRow.empId || "") : (pmInfo.empId || "");
+  setIfColumn(tlRow.raw, ["L2"], tlRow.ownL2);
+  setIfColumn(tlRow.raw, ["L2- EMP ID", "L2-EMP ID"], tlRow.ownL2EmpId);
+  people.filter(p => p.tl === row.tl && (!row.tlEmpId || p.tlEmpId === row.tlEmpId)).forEach(p => {
+    applyPmFromTl(p);
+    updateRawFromNormalized(p);
+  });
+  // Keep the hierarchy internally consistent: if the TL's own L1 is a real GL, that GL's own
+  // L1 (their boss) should agree with the PM. A GL can have multiple TLs with different PMs,
+  // so use whichever PM has the larger headcount across all of this GL's people, not just
+  // whichever TL was just edited.
+  const glName = resolveIdentity(tlRow.tl);
+  const glRow = findOwnRow(glName, tlRow.tlEmpId);
+  if (glRow && roleType(glRow.role) === "gl") {
+    const glPeople = people.filter(p => p.glName === glName);
+    const pmCounts = countPairs(glPeople, p => p.pmName || "No PM");
+    const winningPm = pmCounts[0]?.[0];
+    if (winningPm && winningPm !== "No PM") {
+      const winningPmInfo = getPmInfo(winningPm);
+      const winningPmOwnRow = staffRowByName[winningPm];
+      glRow.tl = winningPmInfo.name;
+      glRow.tlEmail = winningPmOwnRow ? (winningPmOwnRow.email || "") : (winningPmInfo.email || "");
+      glRow.tlEmpId = winningPmOwnRow ? (winningPmOwnRow.empId || "") : (winningPmInfo.empId || "");
+      setIfColumn(glRow.raw, ["Assigned L1 Name", "L1 Name", "L1"], glRow.tl);
+      setIfColumn(glRow.raw, ["Assigned L1 Email ID", "L1 Email ID"], glRow.tlEmail);
+      setIfColumn(glRow.raw, ["L1 Emp ID", "Assigned L1 Emp ID", "L1-EMP ID"], glRow.tlEmpId);
+    }
+  }
+  render();
+}
+function applyRowGl(groupId, glName) {
+  const row = buildRows().find(r => r.groupId === groupId);
+  if (!row) return;
+  const tlRow = findOwnRow(row.tl, row.tlEmpId);
+  if (!tlRow) return;
+  pushUndoSnapshot();
+  captureOriginal(originalRowGl, tlRow.empId || row.tl, row.primaryGl);
+  const glInfo = getGlInfo(glName);
+  tlRow.tl = glInfo.name;
+  tlRow.tlEmail = glInfo.email || "";
+  tlRow.tlEmpId = glInfo.empId || "";
+  setIfColumn(tlRow.raw, ["Assigned L1 Name", "L1 Name", "L1"], tlRow.tl);
+  setIfColumn(tlRow.raw, ["Assigned L1 Email ID", "L1 Email ID"], tlRow.tlEmail);
+  setIfColumn(tlRow.raw, ["L1 Emp ID", "Assigned L1 Emp ID", "L1-EMP ID"], tlRow.tlEmpId);
+  people.filter(p => p.tl === row.tl && (!row.tlEmpId || p.tlEmpId === row.tlEmpId)).forEach(p => {
+    applyGlFromTl(p);
+    p.glManuallySet = true;
+    updateRawFromNormalized(p);
+  });
+  render();
+}
+function getEffectiveLocation(person) {
+  return person.effectiveLocation || (String(person.workLocation || "").toUpperCase() === "WFH" ? "WFH" : (person.deliveryCenter || "Unknown"));
+}
+function rebuildTlLookup() {
+  tlLookup = {};
+  for (const row of staffRows) {
+    if (!row.name) continue;
+    const rt = roleType(row.role);
+    // TL rows give best TL metadata, but operator/buffer rows can also fill lookup from their TL assignment.
+    if (rt === "tl") {
+      tlLookup[row.name] = {
+        email: row.email || "",
+        empId: row.empId || "",
+        effectiveLocation: getEffectiveLocation(row),
+        workLocation: row.workLocation || "",
+        deliveryCenter: row.deliveryCenter || ""
+      };
+    }
+    if (isAssignableRole(row.role) && row.tl) {
+      const existing = tlLookup[row.tl] || {};
+      tlLookup[row.tl] = {
+        email: existing.email || row.tlEmail || "",
+        empId: existing.empId || row.tlEmpId || "",
+        effectiveLocation: existing.effectiveLocation || "Unknown",
+        workLocation: existing.workLocation || "",
+        deliveryCenter: existing.deliveryCenter || ""
+      };
+    }
+  }
+}
+function getTlLocation(tl) {
+  return tlLookup[tl] || { effectiveLocation: "Unknown", email: "", empId: "" };
+}
+function parseAndLoad(text, sourceName) {
+  const parsed = parseCsv(text);
+  rawHeaders = parsed.headers;
+  rawRows = parsed.rows;
+  uploadedBaseline = structuredClone(rawRows);
+  undoStack = [];
+  lastSourceName = sourceName;
+  loadFromRawRows(sourceName);
+}
+function loadFromRawRows(sourceName) {
+  staffRows = rawRows.map((row, idx) => normalizeRow(row, idx));
+
+  // Normalize location capitalization (e.g. "london" vs "London") so the same place isn't treated
+  // as two different locations. Canonical casing = whichever variant appears most often.
+  const locationCasingCounts = {};
+  const noteLocationCasing = value => {
+    const val = clean(value);
+    if (!val) return;
+    const key = val.toLowerCase();
+    if (!locationCasingCounts[key]) locationCasingCounts[key] = {};
+    locationCasingCounts[key][val] = (locationCasingCounts[key][val] || 0) + 1;
+  };
+  staffRows.forEach(row => {
+    noteLocationCasing(row.workLocation);
+    noteLocationCasing(row.deliveryCenter);
+    noteLocationCasing(row.effectiveLocation);
+  });
+  const locationCanonicalCasing = {};
+  Object.entries(locationCasingCounts).forEach(([key, variants]) => {
+    let bestVariant = null, bestCount = -1;
+    Object.entries(variants).forEach(([variant, count]) => {
+      if (count > bestCount) { bestVariant = variant; bestCount = count; }
+    });
+    locationCanonicalCasing[key] = bestVariant;
+  });
+  const canonicalizeLocation = value => {
+    const val = clean(value);
+    if (!val) return val;
+    return locationCanonicalCasing[val.toLowerCase()] || val;
+  };
+  staffRows.forEach(row => {
+    row.workLocation = canonicalizeLocation(row.workLocation);
+    row.deliveryCenter = canonicalizeLocation(row.deliveryCenter);
+    row.effectiveLocation = canonicalizeLocation(row.effectiveLocation);
+  });
+
+  // TL and PM candidates are fully derived from the data each load (no hardcoded seed needed).
+  TL_CANDIDATES = [];
+  staffRows.filter(row => roleType(row.role) === "tl" && row.name && isAlignedRow(row)).forEach(row => {
+    TL_CANDIDATES.push({ name: row.name, email: row.email || "", empId: row.empId || "" });
+  });
+  PM_CANDIDATES = [];
+  staffRows.filter(row => roleType(row.role) === "pm" && row.name && isAlignedRow(row)).forEach(row => {
+    PM_CANDIDATES.push({ name: row.name, email: row.email || "", empId: row.empId || "" });
+  });
+
+  // Learn GL identity (email/empId) from each GL's own row, and register any GL found in the
+  // data that isn't already in the hardcoded candidate list (e.g. after a reorg adds new GLs).
+  const glOwnRowByName = {};
+  staffRows.filter(row => roleType(row.role) === "gl" && row.name).forEach(row => {
+    glOwnRowByName[row.name] = row;
+    if (!GL_CANDIDATES.some(gl => gl.name === row.name) && isAlignedRow(row)) {
+      GL_CANDIDATES.push({ name: row.name, email: row.email || "", empId: row.empId || "" });
+    }
+  });
+  staffRows.forEach(row => {
+    const owner = row.glName && glOwnRowByName[row.glName];
+    if (!owner) return;
+    if (!row.glEmail) row.glEmail = owner.email || "";
+    if (!row.glEmpId) row.glEmpId = owner.empId || "";
+  });
+
+  const notAlignedCount = staffRows.filter(row => isAssignableRole(row.role) && row.workstream && !isAlignedRow(row)).length;
+  people = staffRows.filter(row => isAssignableRole(row.role) && row.workstream && isAlignedRow(row));
+  rebuildTlLookup();
+  rebuildIdentityResolver();
+  rebuildStaffRowByName();
+  rebuildStaffRowByEmpId();
+  // GL comes from the TL's own L1 field, and PM from the TL's own L2 field.
+  people.forEach(p => {
+    if (!p.glName) applyGlFromTl(p);
+    applyPmFromTl(p);
+    updateRawFromNormalized(p);
+  });
+  selectedGroupId = null;
+  sortKey = "opLocation";
+  sortDirection = "asc";
+  selectedTlsByWorkstream = {};
+  expandedGroupIds = new Set();
+  expandedAlertIndexByGroup = {};
+  originalRowGl = {};
+  originalRowPm = {};
+  originalPersonGl = {};
+  originalPersonTl = {};
+  const roleCounts = countPairs(staffRows, p => roleType(p.role));
+  const bufferCount = people.filter(p => roleType(p.role) === "buffer").length;
+  document.getElementById("uploadStatus").textContent = `Loaded ${people.length} assignable rows (${bufferCount} Buffers) and ${staffRows.length - people.length} staff/non-assignable rows from ${sourceName}. Excluded ${notAlignedCount} Operator/Buffer rows not aligned to the project.`;
+  render();
+}
+function handleFileUpload(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  document.getElementById("uploadStatus").textContent = `Loading ${file.name}...`;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      parseAndLoad(String(e.target.result || ""), file.name);
+    } catch (err) {
+      console.error(err);
+      alert("Could not load the CSV. Please check that it is a standard comma-separated CSV.");
+      document.getElementById("uploadStatus").textContent = "CSV load failed.";
+    }
+  };
+  reader.onerror = () => {
+    alert("There was an error reading the file.");
+    document.getElementById("uploadStatus").textContent = "CSV load failed.";
+  };
+  reader.readAsText(file);
+}
+function countPairs(list, getter) {
+  const counts = new Map();
+  for (const p of list) {
+    const value = getter(p) || "Unknown";
+    counts.set(value, (counts.get(value) || 0) + 1);
+  }
+  return [...counts.entries()].sort((a,b) => b[1]-a[1] || String(a[0]).localeCompare(String(b[0])));
+}
+function tagsFromCounts(counts, type="") {
+  return counts.map(([value, count]) => {
+    let cls = "";
+    let style = "";
+    if (type === "location") cls = locationClass(value);
+    else if (type === "gl") style = glTagStyle(value);
+    else if (type === "workflow") cls = "workflow-tag";
+    else if (type === "role") cls = roleClass(value);
+    else if (type === "role-plain") cls = "role-plain";
+    return `<span class="tag ${cls}"${style}>${escapeHtml(value)}: <b>${count}</b></span>`;
+  }).join("");
+}
+function sortLabel(key, label) {
+  if (sortKey !== key) return label + " ↕";
+  return label + (sortDirection === "asc" ? " ↑" : " ↓");
+}
+function setSort(key) {
+  if (sortKey === key) sortDirection = sortDirection === "asc" ? "desc" : "asc";
+  else {
+    sortKey = key;
+    sortDirection = ["rowHeadcount", "workstreamTlHeadcount", "totalTlHeadcount"].includes(key) ? "desc" : "asc";
+  }
+  render();
+}
+function otherWorkstreamText(row) {
+  return row.otherWorkstreams.map(x => `${x.workstream}: ${x.count}`).join(" | ") || "None";
+}
+function buildRows() {
+  const groupMap = new Map();
+  for (const person of people) {
+    const workflow = person.workflow || "Unknown Workflow";
+    const workstream = person.workstream || "Unassigned Workstream";
+    const tl = person.tl || "Unassigned TL";
+    const location = getEffectiveLocation(person);
+    const role = roleType(person.role) === "buffer" ? "Buffer" : "Operator";
+    const key = [workflow, workstream, tl, location, role].join("|||");
+    if (!groupMap.has(key)) groupMap.set(key, { groupId: key, workflow, workstream, tl, location, role, people: [] });
+    groupMap.get(key).people.push(person);
+  }
+  return [...groupMap.values()].map(group => {
+    const allTlRows = people.filter(p => (p.tl || "Unassigned TL") === group.tl);
+    const allTlWsRows = people.filter(p => (p.tl || "Unassigned TL") === group.tl && (p.workstream || "Unassigned Workstream") === group.workstream);
+    const wsCounts = new Map();
+    for (const p of allTlRows) {
+      const ws = p.workstream || "Unassigned Workstream";
+      wsCounts.set(ws, (wsCounts.get(ws) || 0) + 1);
+    }
+    const otherWorkstreams = [...wsCounts.entries()]
+      .filter(([ws]) => ws !== group.workstream)
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([workstream, count]) => ({ workstream, count }));
+    // The row's own L1/GL is the TL's own raw L1 — a single fact about the TL (editing it via
+    // the row dropdown updates the TL's real record directly, so this is always in sync).
+    const tlEmpId = group.people[0]?.tlEmpId || "";
+    const primaryGl = getTlOwnGl(group.tl, tlEmpId);
+    const glEmpId = group.people[0]?.glEmpId || "";
+    const tlLocation = getTlLocation(group.tl);
+    // PM likewise is the TL's own raw L2.
+    const pm = group.people[0]?.pmName || "No PM";
+    const pmEmpId = group.people[0]?.pmEmpId || "";
+    const glMismatchPeople = group.people.filter(p => personGlMismatch(p));
+    const tlIssue = tlStructureMismatch(group.tl, tlEmpId);
+    const pmIssue = pmStructureMismatch(pm, pmEmpId);
+    // Check the person's own row directly (not via findOwnRow) — some people have duplicate
+    // rows across workstreams with differing alignment, and we want *this* row's own status,
+    // not whichever duplicate happened to win the emp-ID lookup.
+    const operatorAlignmentIssues = group.people
+      .filter(p => !isAlignedRow(p))
+      .map(p => `Operator "${p.name}" is marked "${p.aligned || "Not a part of the Project"}"`);
+    const tlAlignmentIssue = alignmentIssue("TL", group.tl, tlEmpId);
+    const glAlignmentIssue = alignmentIssue("GL", primaryGl, glEmpId);
+    const pmAlignmentIssue = alignmentIssue("PM", pm, pmEmpId);
+    const tlEmpIdProblem = tlEmpIdIssue(group.tl, tlEmpId);
+    const tlCenters = uniqueSorted(allTlRows.map(p => getEffectiveLocation(p)));
+    const multiCenterTl = tlCenters.length > 1 ? tlCenters : null;
+    const notes = [];
+    const tlKey = tlEmpId || group.tl;
+    if (tlKey in originalRowGl && originalRowGl[tlKey] !== primaryGl) {
+      notes.push(`L1: ${originalRowGl[tlKey]} → ${primaryGl}`);
+    }
+    if (tlKey in originalRowPm && originalRowPm[tlKey] !== pm) {
+      notes.push(`L2: ${originalRowPm[tlKey]} → ${pm}`);
+    }
+    group.people.forEach(p => {
+      if (p.idx in originalPersonGl && originalPersonGl[p.idx] !== p.glName) {
+        notes.push(`${p.name} L2: ${originalPersonGl[p.idx]} → ${p.glName}`);
+      }
+      if (p.idx in originalPersonTl && originalPersonTl[p.idx] !== p.tl) {
+        notes.push(`${p.name} L1: ${originalPersonTl[p.idx]} → ${p.tl}`);
+      }
+    });
+    return {
+      ...group,
+      tlEmpId,
+      rowHeadcount: group.people.length,
+      workstreamTlHeadcount: allTlWsRows.length,
+      totalTlHeadcount: allTlRows.length,
+      tlLocation: tlLocation.effectiveLocation || "Unknown",
+      otherWorkstreams,
+      primaryGl,
+      isMixedGl: false,
+      pm,
+      mismatchCount: glMismatchPeople.length,
+      glMismatchPeople,
+      tlIssue,
+      pmIssue,
+      operatorAlignmentIssues,
+      tlAlignmentIssue,
+      glAlignmentIssue,
+      pmAlignmentIssue,
+      tlEmpIdProblem,
+      multiCenterTl,
+      notes
+    };
+  });
+}
+function sortRows(rows) {
+  const direction = sortDirection === "asc" ? 1 : -1;
+  return [...rows].sort((a, b) => {
+    let av, bv;
+    if (sortKey === "role") { av = a.role; bv = b.role; }
+    else if (sortKey === "tl") { av = a.tl; bv = b.tl; }
+    else if (sortKey === "tlLocation") { av = a.tlLocation; bv = b.tlLocation; }
+    else if (sortKey === "opLocation") { av = a.location; bv = b.location; }
+    else if (sortKey === "gl") { av = a.primaryGl; bv = b.primaryGl; }
+    else if (sortKey === "pm") { av = a.pm; bv = b.pm; }
+    else if (sortKey === "rowHeadcount") { av = a.rowHeadcount; bv = b.rowHeadcount; }
+    else if (sortKey === "workstreamTlHeadcount") { av = a.workstreamTlHeadcount; bv = b.workstreamTlHeadcount; }
+    else if (sortKey === "totalTlHeadcount") { av = a.totalTlHeadcount; bv = b.totalTlHeadcount; }
+    else { av = a.tl; bv = b.tl; }
+    if (typeof av === "number" && typeof bv === "number") {
+      return (av - bv) * direction
+        || (b.workstreamTlHeadcount - a.workstreamTlHeadcount)
+        || a.location.localeCompare(b.location)
+        || a.tl.localeCompare(b.tl);
+    }
+    return String(av).localeCompare(String(bv)) * direction
+      || b.rowHeadcount - a.rowHeadcount
+      || b.workstreamTlHeadcount - a.workstreamTlHeadcount
+      || a.location.localeCompare(b.location)
+      || a.tl.localeCompare(b.tl);
+  });
+}
+function rebuildWorkstreamPmInfo() {
+  workstreamPmInfo = {};
+  const wsNames = uniqueSorted(people.map(p => p.workstream || "Unassigned Workstream"));
+  wsNames.forEach(workstream => {
+    const wsPeople = people.filter(p => (p.workstream || "Unassigned Workstream") === workstream);
+    const pmCounts = countPairs(wsPeople, p => p.pmName || "No PM");
+    const glCounts = countPairs(wsPeople, p => p.glName || "No GL");
+    workstreamPmInfo[workstream] = {
+      pmCounts,
+      glCounts,
+      isMultiPm: pmCounts.length > 1,
+      isMultiGl: glCounts.length > 1
+    };
+  });
+  // Table header color by split type: GL-only = orange, PM-only = yellow, both = red.
+  wsNames.forEach(ws => {
+    const info = workstreamPmInfo[ws];
+    if (info.isMultiGl && info.isMultiPm) info.highlightColor = SPLIT_COLOR_BOTH;
+    else if (info.isMultiGl) info.highlightColor = SPLIT_COLOR_GL;
+    else if (info.isMultiPm) info.highlightColor = SPLIT_COLOR_PM;
+  });
+  // PM/GL summary cards keep each split workstream's original distinct color instead.
+  const splitWorkstreams = wsNames
+    .filter(ws => workstreamPmInfo[ws].isMultiPm || workstreamPmInfo[ws].isMultiGl)
+    .sort((a, b) => a.localeCompare(b));
+  splitWorkstreams.forEach((ws, idx) => {
+    workstreamPmInfo[ws].legacyColor = MULTI_PM_PALETTE[idx % MULTI_PM_PALETTE.length];
+  });
+}
+function computeMultiPmGlNames() {
+  const glPms = {};
+  people.forEach(p => {
+    const gl = p.glName || "No GL";
+    if (!glPms[gl]) glPms[gl] = new Set();
+    glPms[gl].add(p.pmName || "No PM");
+  });
+  const multi = new Set();
+  Object.entries(glPms).forEach(([gl, pms]) => { if (pms.size > 1) multi.add(gl); });
+  return multi;
+}
+function renderGlTagsForPm(glCounts, multiPmGls) {
+  if (!glCounts.length) return '<span class="empty">None</span>';
+  return glCounts.map(([gl, count]) => {
+    const style = multiPmGls.has(gl) ? glTagStyle(gl) : "";
+    return `<span class="tag"${style}>${escapeHtml(gl)}: <b>${count}</b></span>`;
+  }).join("");
+}
+function renderWorkstreamTags(wsCounts, relevantDimension = "both") {
+  if (!wsCounts.length) return '<span class="empty">None</span>';
+  return wsCounts.map(([ws, count]) => {
+    const info = workstreamPmInfo[ws];
+    let shouldHighlight = false;
+    if (info) {
+      if (relevantDimension === "pm") shouldHighlight = info.isMultiPm;
+      else if (relevantDimension === "gl") shouldHighlight = info.isMultiGl;
+      else shouldHighlight = info.isMultiPm || info.isMultiGl;
+    }
+    const style = shouldHighlight && info.legacyColor
+      ? ` style="border-color:${info.legacyColor.border}; color:${info.legacyColor.border}; background:${info.legacyColor.bg};"`
+      : "";
+    return `<span class="tag"${style}>${escapeHtml(ws)}: <b>${count}</b></span>`;
+  }).join("");
+}
+function buildWorkstreamSections() {
+  const rows = buildRows();
+  const wsNames = uniqueSorted(people.map(p => p.workstream || "Unassigned Workstream"));
+  return wsNames.map(workstream => {
+    const wsPeople = people.filter(p => (p.workstream || "Unassigned Workstream") === workstream);
+    const wsRows = rows.filter(r => r.workstream === workstream);
+    const workflow = wsPeople[0]?.workflow || "Unknown Workflow";
+    const info = workstreamPmInfo[workstream] || { pmCounts: [], glCounts: [], isMultiPm: false, isMultiGl: false };
+    return {
+      workflow,
+      workstream,
+      totalAssignable: wsPeople.length,
+      operatorCount: wsPeople.filter(p => roleType(p.role) === "operator").length,
+      bufferCount: wsPeople.filter(p => roleType(p.role) === "buffer").length,
+      tlCount: uniqueSorted(wsRows.map(r => r.tl)).length,
+      rows: sortRows(wsRows),
+      roleSummary: tagsFromCounts(countPairs(wsPeople, p => roleType(p.role) === "buffer" ? "Buffer" : "Operator"), "role"),
+      glSummary: tagsFromCounts(countPairs(wsPeople, p => p.glName || "No GL"), "gl"),
+      pmSummary: tagsFromCounts(info.pmCounts, "pm"),
+      pmCounts: info.pmCounts,
+      glCounts: info.glCounts,
+      isMultiPm: info.isMultiPm,
+      isMultiGl: info.isMultiGl,
+      highlightColor: info.highlightColor
+    };
+  }).sort((a, b) => b.totalAssignable - a.totalAssignable || a.workflow.localeCompare(b.workflow) || a.workstream.localeCompare(b.workstream));
+}
+function validateTotals(sections) {
+  const rowTotal = buildRows().reduce((sum, row) => sum + row.rowHeadcount, 0);
+  const dataTotal = people.length;
+  const mismatched = sections.filter(section => section.rows.reduce((sum, row) => sum + row.rowHeadcount, 0) !== section.totalAssignable);
+  return { ok: rowTotal === dataTotal && mismatched.length === 0, rowTotal, dataTotal, mismatched };
+}
+function renderStats(sections) {
+  if (!people.length) {
+    document.getElementById("globalStats").innerHTML = `<span class="stat">0 rows loaded</span><span class="stat">Upload a CSV to begin</span>`;
+    return;
+  }
+  const validation = validateTotals(sections);
+  const assignableRoleCounts = countPairs(people, p => roleType(p.role) === "buffer" ? "Buffer" : "Operator");
+  const allRoleCounts = countPairs(staffRows, p => p.role || "Unknown");
+  document.getElementById("globalStats").innerHTML = `
+    <span class="stat">${people.length} assignable rows</span>
+    ${tagsFromCounts(assignableRoleCounts, "role")}
+    <span class="stat">${uniqueSorted(people.map(p => p.workflow || "Unknown Workflow")).length} workflows</span>
+    <span class="stat">${sections.length} workstreams</span>
+    <span class="stat">${uniqueSorted(people.map(p => p.tl || "Unassigned TL")).length} TLs</span>
+    <span class="stat">${uniqueSorted(people.map(p => p.glName || "No GL")).length} GLs</span>
+    <span class="stat">${staffRows.length} total CSV rows</span>
+    <span class="stat ${validation.ok ? "ok" : "bad"}">${validation.ok ? "Totals validated" : "Total mismatch detected"}</span>
+  `;
+}
+
+
+function renderTlList(assigned) {
+  const tlCounts = countPairs(assigned, p => p.tl || "Unassigned TL");
+  if (!tlCounts.length) return '<span class="empty">None</span>';
+  return tlCounts.map(([tl, count]) => `<span class="tag">${escapeHtml(tl)}: <b>${count}</b></span>`).join("");
+}
+
+function renderPmCards() {
+  if (!people.length) {
+    document.getElementById("pmCards").innerHTML = "";
+    return;
+  }
+
+  const pmNames = uniqueSorted(people.map(p => p.pmName).filter(Boolean));
+  const multiPmGls = computeMultiPmGlNames();
+
+  const cards = pmNames.map(pmName => {
+    const assigned = people.filter(p => p.pmName === pmName);
+    const glCounts = countPairs(assigned, p => p.glName || "No GL");
+    const roleCounts = countPairs(assigned, p => roleType(p.role) === "buffer" ? "Buffer" : "Operator");
+    const roleTags = tagsFromCounts(roleCounts, "role-plain") || '<span class="tag role-plain">0</span>';
+    const wfCounts = countPairs(assigned, p => p.workflow || "Unknown Workflow");
+    const wsCounts = countPairs(assigned, p => p.workstream || "Unassigned Workstream");
+    const tlCount = uniqueSorted(assigned.map(p => p.tl || "Unassigned TL")).length;
+    const glCount = uniqueSorted(assigned.map(p => p.glName || "No GL")).length;
+    const pmIssue = pmStructureMismatch(pmName, assigned[0]?.pmEmpId);
+    const pmIssueBadge = pmIssue ? alertTag(`Not actually PM: ${pmIssue}`, ALERT_COLOR_STRUCTURE) : "";
+
+    return `
+      <div class="gl-card">
+        <div class="gl-card-name">${escapeHtml(pmName)}</div>
+        <div class="gl-card-hc">${assigned.length}</div>
+        <div class="gl-card-sub">assigned rows · ${glCount} GLs · ${tlCount} TLs · ${wfCounts.length} workflows · ${wsCounts.length} workstreams</div>
+        ${pmIssueBadge ? `<div>${pmIssueBadge}</div>` : ""}
+        <div>${roleTags}</div>
+        <div class="gl-card-section-label">Group Leads</div>
+        <div>${renderGlTagsForPm(glCounts, multiPmGls)}</div>
+        <details class="tl-details">
+          <summary>TLs (${tlCount})</summary>
+          <div>${renderTlList(assigned)}</div>
+        </details>
+        <div class="gl-card-section-label">Workstreams</div>
+        <div>${renderWorkstreamTags(wsCounts, "pm")}</div>
+      </div>`;
+  }).join("");
+
+  document.getElementById("pmCards").innerHTML = cards || `<div class="empty">No PM/L2 assignments found in the uploaded CSV.</div>`;
+}
+
+
+function renderGlCards() {
+  if (!people.length) {
+    document.getElementById("glCards").innerHTML = "";
+    return;
+  }
+  const cards = GL_CANDIDATES.map(gl => {
+    const assigned = people.filter(p => p.glName === gl.name);
+    const roleCounts = countPairs(assigned, p => roleType(p.role) === "buffer" ? "Buffer" : "Operator");
+    const roleTags = tagsFromCounts(roleCounts, "role-plain") || '<span class="tag role-plain">0</span>';
+    const wsCounts = countPairs(assigned, p => p.workstream || "Unassigned Workstream");
+    const tlCount = uniqueSorted(assigned.map(p => p.tl || "Unassigned TL")).length;
+    const glIssue = glStructureMismatch(gl.name, gl.empId);
+    const glIssueBadge = glIssue ? alertTag(`Not actually GL: ${glIssue}`, ALERT_COLOR_STRUCTURE) : "";
+    return `
+      <div class="gl-card">
+        <div class="gl-card-name">${escapeHtml(gl.name)}</div>
+        <div class="gl-card-hc">${assigned.length}</div>
+        <div class="gl-card-sub">assigned rows · ${tlCount} TLs · ${wsCounts.length} workstreams</div>
+        ${glIssueBadge ? `<div>${glIssueBadge}</div>` : ""}
+        <div>${roleTags}</div>
+        <details class="tl-details">
+          <summary>TLs (${tlCount})</summary>
+          <div>${renderTlList(assigned)}</div>
+        </details>
+        <div class="gl-card-section-label">Workstreams</div>
+        <div>${renderWorkstreamTags(wsCounts, "gl")}</div>
+      </div>`;
+  }).join("");
+  document.getElementById("glCards").innerHTML = cards;
+}
+function renderStatCards() {
+  if (!people.length) {
+    document.getElementById("statCards").innerHTML = "";
+    return;
+  }
+  const operators = people.filter(p => roleType(p.role) === "operator");
+  const opBufferPeople = people.filter(p => roleType(p.role) === "operator" || roleType(p.role) === "buffer");
+  const wfhCount = opBufferPeople.filter(p => String(getEffectiveLocation(p) || "").toUpperCase() === "WFH").length;
+  const colocationPeople = opBufferPeople.filter(p => String(getEffectiveLocation(p) || "").toUpperCase() !== "WFH");
+  const total = colocationPeople.length;
+
+  let colocated = 0, notColocated = 0, unknown = 0;
+  colocationPeople.forEach(p => {
+    const personLoc = String(getEffectiveLocation(p) || "Unknown").toUpperCase();
+    const tlLoc = String(getTlLocation(p.tl).effectiveLocation || "Unknown").toUpperCase();
+    if (personLoc === "UNKNOWN" || tlLoc === "UNKNOWN") { unknown++; return; }
+    if (personLoc === tlLoc) colocated++;
+    else notColocated++;
+  });
+  const colocatedPct = total ? Math.round((colocated / total) * 100) : 0;
+
+  const byTl = {};
+  operators.forEach(p => {
+    const tl = p.tl || "Unassigned TL";
+    if (!byTl[tl]) byTl[tl] = new Map();
+    const loc = getEffectiveLocation(p) || "Unknown";
+    byTl[tl].set(loc, (byTl[tl].get(loc) || 0) + 1);
+  });
+  const tlEntries = Object.entries(byTl);
+  const multiCenterTls = tlEntries
+    .filter(([, locs]) => locs.size > 1)
+    .sort((a, b) => b[1].size - a[1].size || a[0].localeCompare(b[0]));
+
+  const tlTeamSizes = {};
+  people.forEach(p => {
+    const tl = p.tl || "Unassigned TL";
+    tlTeamSizes[tl] = (tlTeamSizes[tl] || 0) + 1;
+  });
+  const sizes = Object.values(tlTeamSizes).sort((a, b) => a - b);
+  const sizeMin = sizes.length ? sizes[0] : 0;
+  const sizeMax = sizes.length ? sizes[sizes.length - 1] : 0;
+  const sizeMedian = sizes.length
+    ? (sizes.length % 2 === 1
+        ? sizes[(sizes.length - 1) / 2]
+        : (sizes[sizes.length / 2 - 1] + sizes[sizes.length / 2]) / 2)
+    : 0;
+  // Show every TL that is itself aligned to the project, even with zero aligned reports
+  // (e.g. their whole team rolled off) — but never a TL that is itself not aligned.
+  const alignedTlNames = new Set(Object.keys(tlTeamSizes));
+  staffRows.filter(row => roleType(row.role) === "tl" && row.name && isAlignedRow(row)).forEach(row => alignedTlNames.add(row.name));
+  const smallTls = [...alignedTlNames]
+    .map(tl => [tl, tlTeamSizes[tl] || 0])
+    .filter(([, size]) => size < 10)
+    .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0]));
+  const largeTls = Object.entries(tlTeamSizes)
+    .filter(([, size]) => size > 30)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+
+  const tlWorkstreams = {};
+  people.forEach(p => {
+    const tl = p.tl || "Unassigned TL";
+    if (!tlWorkstreams[tl]) tlWorkstreams[tl] = new Set();
+    tlWorkstreams[tl].add(p.workstream || "Unassigned Workstream");
+  });
+  const multiWsTls = Object.entries(tlWorkstreams)
+    .filter(([, wsSet]) => wsSet.size > 1)
+    .sort((a, b) => b[1].size - a[1].size || a[0].localeCompare(b[0]));
+
+  const multiCenterPct = tlEntries.length ? Math.round((multiCenterTls.length / tlEntries.length) * 100) : 0;
+  const tlWorkstreamCount = Object.keys(tlWorkstreams).length;
+  const multiWsPct = tlWorkstreamCount ? Math.round((multiWsTls.length / tlWorkstreamCount) * 100) : 0;
+
+  document.getElementById("statCards").innerHTML = `
+    <div class="gl-card" style="border: 2px solid #111827;">
+      <div class="gl-card-name">TL team size</div>
+      <div class="gl-card-hc">${sizeMedian} <span style="font-size:13px; color:#6b7280; font-weight:normal;">median</span></div>
+      <div class="gl-card-sub">range ${sizeMin}&ndash;${sizeMax} &middot; across ${sizes.length} TLs &middot; Operators + Buffers</div>
+      <details class="tl-details">
+        <summary>Teams &lt; 10 (${smallTls.length})</summary>
+        <div>${smallTls.map(([tl, size]) => `<span class="tag">${escapeHtml(tl)}: <b>${size}</b></span>`).join("") || '<span class="empty">None</span>'}</div>
+      </details>
+      <details class="tl-details">
+        <summary>Teams &gt; 30 (${largeTls.length})</summary>
+        <div>${largeTls.map(([tl, size]) => `<span class="tag">${escapeHtml(tl)}: <b>${size}</b></span>`).join("") || '<span class="empty">None</span>'}</div>
+      </details>
+    </div>
+    <div class="gl-card">
+      <div class="gl-card-name">Co-located with TL</div>
+      <div class="gl-card-hc">${colocated} <span style="font-size:13px; color:#6b7280; font-weight:normal;">/ ${total} (${colocatedPct}%)</span></div>
+      <div class="gl-card-sub">Operators + Buffers who are WFO (WFH excluded)</div>
+      <div>
+        <span class="tag" style="border-color:#86efac; color:#166534; background:#f0fdf4;">Co-located: <b>${colocated}</b></span>
+        <span class="tag" style="border-color:#fdba74; color:#9a3412; background:#fff7ed;">Not co-located: <b>${notColocated}</b></span>
+        ${unknown ? `<span class="tag">Unknown location: <b>${unknown}</b></span>` : ""}
+      </div>
+    </div>
+    <div class="gl-card">
+      <div class="gl-card-name">WFH</div>
+      <div class="gl-card-hc">${wfhCount}</div>
+      <div class="gl-card-sub">Operators + Buffers working from home</div>
+    </div>
+    <div class="gl-card">
+      <div class="gl-card-name">TLs spanning multiple centers</div>
+      <div class="gl-card-hc">${multiCenterTls.length} <span style="font-size:13px; color:#6b7280; font-weight:normal;">/ ${tlEntries.length} (${multiCenterPct}%)</span></div>
+      <div class="gl-card-sub">of TLs with Operators &middot; center = OP effective location</div>
+      <details class="tl-details">
+        <summary>TLs (${multiCenterTls.length})</summary>
+        <div>${multiCenterTls.map(([tl, locs]) => `<span class="tag">${escapeHtml(tl)}: <b>${locs.size}</b></span>`).join("") || '<span class="empty">None</span>'}</div>
+      </details>
+    </div>
+    <div class="gl-card">
+      <div class="gl-card-name">TLs spanning multiple workstreams</div>
+      <div class="gl-card-hc">${multiWsTls.length} <span style="font-size:13px; color:#6b7280; font-weight:normal;">/ ${tlWorkstreamCount} (${multiWsPct}%)</span></div>
+      <div class="gl-card-sub">Operators + Buffers</div>
+      <details class="tl-details">
+        <summary>TLs (${multiWsTls.length})</summary>
+        <div>${multiWsTls.map(([tl, wsSet]) => `<span class="tag">${escapeHtml(tl)}: <b>${wsSet.size}</b></span>`).join("") || '<span class="empty">None</span>'}</div>
+      </details>
+    </div>
+  `;
+}
+function alertTag(text, color, title, index) {
+  const idxAttr = index !== undefined ? ` data-alert-index="${index}"` : "";
+  return `<span class="tag" style="border-color:${color.border}; color:${color.text}; background:${color.bg};"${idxAttr}>${escapeHtml(text)}</span>`;
+}
+const ALERT_COLOR_STRUCTURE = { border: "#8b5cf6", text: "#5b21b6", bg: "#f5f3ff" };   // TL/PM chain broken
+const ALERT_COLOR_EMPID = { border: "#e11d48", text: "#9f1239", bg: "#fff1f2" };       // Emp ID reference issue
+const ALERT_COLOR_ALIGN = { border: "#f59e0b", text: "#92400e", bg: "#fffbeb" };       // alignment status mismatch
+const ALERT_COLOR_INFO = { border: "#3b82f6", text: "#1e40af", bg: "#eff6ff" };        // informational (other workstreams)
+const ALERT_COLOR_CENTER = { border: "#14b8a6", text: "#115e59", bg: "#f0fdfa" };      // multi-center
+const ALERT_COLOR_MISMATCH = { border: "#ef4444", text: "#991b1b", bg: "#fef2f2" };    // GL data disagreement
+const ALERT_COLOR_NOTE = { border: "#94a3b8", text: "#334155", bg: "#f8fafc" };        // change log
+function getRowAlerts(row) {
+  const alerts = [];
+  if (row.tlIssue) {
+    alerts.push({ text: "TL structure", color: ALERT_COLOR_STRUCTURE, detail: `TL "${row.tl}": ${row.tlIssue}` });
+  }
+  if (row.tlEmpIdProblem) {
+    alerts.push({ text: "Emp ID issue", color: ALERT_COLOR_EMPID, detail: row.tlEmpIdProblem });
+  }
+  if (row.operatorAlignmentIssues.length) {
+    alerts.push({ text: `Operator not aligned (${row.operatorAlignmentIssues.length})`, color: ALERT_COLOR_ALIGN, detail: row.operatorAlignmentIssues.join("\n") });
+  }
+  if (row.tlAlignmentIssue) {
+    alerts.push({ text: "TL not aligned", color: ALERT_COLOR_ALIGN, detail: row.tlAlignmentIssue });
+  }
+  if (row.glAlignmentIssue) {
+    alerts.push({ text: "GL not aligned", color: ALERT_COLOR_ALIGN, detail: row.glAlignmentIssue });
+  }
+  if (row.pmAlignmentIssue) {
+    alerts.push({ text: "PM not aligned", color: ALERT_COLOR_ALIGN, detail: row.pmAlignmentIssue });
+  }
+  row.otherWorkstreams.forEach(w => {
+    alerts.push({ text: `${w.workstream}: ${w.count}`, color: ALERT_COLOR_INFO, detail: `TL also works on "${w.workstream}" (${w.count} people)` });
+  });
+  if (row.pmIssue) {
+    alerts.push({ text: "PM structure", color: ALERT_COLOR_STRUCTURE, detail: `PM "${row.pm}": ${row.pmIssue}` });
+  }
+  if (row.multiCenterTl) {
+    alerts.push({ text: "Multi Center", color: ALERT_COLOR_CENTER, detail: `TL's people are spread across: ${row.multiCenterTl.join(", ")}` });
+  }
+  if (row.glMismatchPeople.length) {
+    const detail = row.glMismatchPeople.map(p => `${p.name}: Operator's GL ${personGlMismatch(p)}, TL's GL ${row.primaryGl}`).join("\n");
+    alerts.push({ text: `GL mismatch (${row.glMismatchPeople.length})`, color: ALERT_COLOR_MISMATCH, detail });
+  }
+  if (row.notes.length) {
+    alerts.push({ text: `${row.notes.length} change${row.notes.length > 1 ? "s" : ""}`, color: ALERT_COLOR_NOTE, detail: row.notes.join("\n") });
+  }
+  return alerts;
+}
+function renderAlertsCell(row) {
+  const alerts = getRowAlerts(row);
+  if (!alerts.length) return '<span class="empty">None</span>';
+  const expandedIdx = expandedAlertIndexByGroup[row.groupId];
+  return alerts.map((a, i) => {
+    const caret = expandedIdx === i ? "▾" : "▸";
+    return alertTag(`${caret} ${a.text}`, a.color, a.detail, i);
+  }).join("");
+}
+// Detail for just the one alert that's expanded, positioned under the Alerts column only
+// (blank cells before/after) rather than spanning the whole row width.
+function renderAlertDetailsRow(row) {
+  const alerts = getRowAlerts(row);
+  const idx = expandedAlertIndexByGroup[row.groupId];
+  const alert = alerts[idx];
+  if (!alert) return "";
+  return `
+    <tr class="alert-details-row" data-group-id="${escapeHtml(row.groupId)}">
+      <td colspan="6"></td>
+      <td class="alert-detail-cell" style="border-left: 4px solid ${alert.color.border};">${escapeHtml(alert.detail)}</td>
+      <td colspan="3"></td>
+    </tr>`;
+}
+function isTlSelected(workstream, tl) {
+  return (selectedTlsByWorkstream[workstream] || []).includes(tl);
+}
+function applyPersonGl(personIdx, glName) {
+  const person = people.find(p => p.idx === Number(personIdx));
+  if (!person) return;
+  pushUndoSnapshot();
+  captureOriginal(originalPersonGl, person.idx, person.glName);
+  const gl = getGlInfo(glName);
+  person.glName = gl.name;
+  person.glEmail = gl.email || "";
+  person.glEmpId = gl.empId || "";
+  person.glManuallySet = true;
+  updateRawFromNormalized(person);
+  render();
+}
+function togglePeopleExpand(groupId) {
+  if (expandedGroupIds.has(groupId)) expandedGroupIds.delete(groupId);
+  else expandedGroupIds.add(groupId);
+  render();
+}
+function toggleAlertDetails(groupId, index) {
+  const idx = Number(index);
+  if (expandedAlertIndexByGroup[groupId] === idx) delete expandedAlertIndexByGroup[groupId];
+  else expandedAlertIndexByGroup[groupId] = idx;
+  render();
+}
+function renderGlDropdown(row) {
+  return `<select class="row-gl-select" style="${stripeDropdownStyle(row.primaryGl)}" data-group-id="${escapeHtml(row.groupId)}">${glOptions(row.primaryGl)}</select>`;
+}
+function renderPersonGlDropdown(person) {
+  return `<select class="person-gl-select" style="${stripeDropdownStyle(person.glName)}" data-person-idx="${escapeHtml(person.idx)}">${glOptions(person.glName || "Unassigned GL")}</select>`;
+}
+function renderPersonTlDropdown(person) {
+  return `<select class="person-tl-select" data-person-idx="${escapeHtml(person.idx)}">${tlOptions(person.tl || "Unassigned TL")}</select>`;
+}
+function renderPersonSubRow(person) {
+  const mismatch = personGlMismatch(person);
+  const alertCell = mismatch
+    ? alertTag(`Operator's GL ${mismatch}, TL's GL ${getTlOwnGl(person.tl, person.tlEmpId)}`, ALERT_COLOR_MISMATCH)
+    : "";
+  return `
+    <tr class="person-subrow" data-person-idx="${escapeHtml(person.idx)}">
+      <td class="select-cell"></td>
+      <td></td>
+      <td class="person-name">${escapeHtml(person.name)}</td>
+      <td class="count">&mdash;</td>
+      <td>&mdash;</td>
+      <td style="text-align: center;"><span class="tag ${locationClass(getEffectiveLocation(person))}">${escapeHtml(getEffectiveLocation(person))}</span></td>
+      <td>${alertCell}</td>
+      <td>${renderPersonTlDropdown(person)}</td>
+      <td>${renderPersonGlDropdown(person)}</td>
+      <td class="action-cell"></td>
+    </tr>`;
+}
+function renderRow(row) {
+  const expanded = expandedGroupIds.has(row.groupId);
+  const peopleRows = expanded ? row.people.map(renderPersonSubRow).join("") : "";
+  const alertsExpanded = row.groupId in expandedAlertIndexByGroup;
+  const alertDetailsRow = alertsExpanded ? renderAlertDetailsRow(row) : "";
+  return `
+    <tr class="draggable-row" draggable="true" data-group-id="${escapeHtml(row.groupId)}" data-workstream="${escapeHtml(row.workstream)}" data-tl="${escapeHtml(row.tl)}">
+      <td class="select-cell"><input type="checkbox" class="tl-select" data-workstream="${escapeHtml(row.workstream)}" data-tl="${escapeHtml(row.tl)}" ${isTlSelected(row.workstream, row.tl) ? "checked" : ""}></td>
+      <td><span class="tag ${roleClass(row.role)} toggle-people-btn" data-group-id="${escapeHtml(row.groupId)}">${expanded ? "▾" : "▸"} ${escapeHtml(row.role)}</span></td>
+      <td><span class="tl-name">${escapeHtml(row.tl)}</span></td>
+      <td class="count">${row.totalTlHeadcount}</td>
+      <td style="text-align: center;"><span class="tag ${locationClass(row.tlLocation)}">${escapeHtml(row.tlLocation)}</span></td>
+      <td style="text-align: center;"><span class="tag ${locationClass(row.location)}">${escapeHtml(row.location)}: <b>${row.rowHeadcount}</b></span></td>
+      <td class="alerts-cell" data-group-id="${escapeHtml(row.groupId)}">${renderAlertsCell(row)}</td>
+      <td>${renderGlDropdown(row)}</td>
+      <td>${renderRowPmDropdown(row)}</td>
+      <td class="action-cell">
+        <button class="split-btn" data-group-id="${escapeHtml(row.groupId)}">Split / Reassign</button>
+      </td>
+    </tr>${alertDetailsRow}${peopleRows}`;
+}
+function render() {
+  if (!people.length) {
+    renderStats([]);
+    renderPmCards();
+    renderGlCards();
+    renderStatCards();
+    document.getElementById("app").innerHTML = `<div class="empty-state"><h2>Upload a CSV to populate the tool</h2><p>Operators and Buffers will load into the workstream tables. TL, GL, PM, MIS, and other staff rows will be preserved in the downloaded CSV.</p></div>`;
+    return;
+  }
+  rebuildWorkstreamPmInfo();
+  const sections = buildWorkstreamSections();
+  renderStats(sections);
+  renderPmCards();
+  renderGlCards();
+  renderStatCards();
+  const output = sections.map(section => {
+    const selectedCount = (selectedTlsByWorkstream[section.workstream] || []).length;
+    const rows = sortRows(section.rows);
+    const isSplit = section.isMultiPm || section.isMultiGl;
+    const sectionStyle = isSplit ? ` style="border-color: ${section.highlightColor.border};"` : "";
+    const headerStyle = isSplit ? ` style="border-left-color: ${section.highlightColor.border}; background: ${section.highlightColor.bg};"` : "";
+    const splitBadgeStyle = isSplit ? ` style="border-color:${section.highlightColor.border}; color:${section.highlightColor.border}; background:${section.highlightColor.bg};"` : "";
+    const multiPmBadge = section.isMultiPm ? `<span class="tag"${splitBadgeStyle}>⚠ Spans multiple PMs</span>` : "";
+    const multiGlBadge = section.isMultiGl ? `<span class="tag"${splitBadgeStyle}>⚠ Spans multiple GLs</span>` : "";
+    return `
+      <section class="workstream-section"${sectionStyle}>
+        <div class="workstream-header"${headerStyle}>
+          <div>
+            <div class="ws-title">${escapeHtml(section.workstream)} <span class="workflow-bracket">[${escapeHtml(section.workflow)}]</span> ${multiPmBadge} ${multiGlBadge}</div>
+            <div class="summary-grid">
+              <span class="summary-label">Summary:</span>
+              <span class="tag">${section.totalAssignable} assignable</span>
+              <span class="tag">${section.tlCount} TLs</span>
+              ${section.roleSummary}
+              <span class="summary-label">Group Leads:</span>
+              ${section.glSummary || "None"}
+              <span class="summary-label">PMs:</span>
+              ${section.pmSummary || "None"}
+            </div>
+          </div>
+          <div class="workstream-actions">
+            <span class="summary-label">TL Balance:</span>
+            <span>${selectedCount} selected</span>
+            <button class="auto-balance-btn" data-workstream="${escapeHtml(section.workstream)}">Auto Balance Selected TLs</button>
+            <button class="clear-selection-btn" data-workstream="${escapeHtml(section.workstream)}">Clear</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th style="width: 34px;">Sel</th>
+              <th class="sortable" data-sort-key="role" style="width: 90px;">${sortLabel("role", "Role")}</th>
+              <th class="sortable" data-sort-key="tl" style="width: 240px;">${sortLabel("tl", "TL")}</th>
+              <th class="sortable" data-sort-key="totalTlHeadcount" style="width: 75px;">${sortLabel("totalTlHeadcount", "TL HC")}</th>
+              <th class="sortable" data-sort-key="tlLocation" style="width: 90px;">${sortLabel("tlLocation", "TL Location")}</th>
+              <th class="sortable" data-sort-key="opLocation" style="width: 100px;">${sortLabel("opLocation", "OP/Buffer Location")}</th>
+              <th style="width: 380px;">Alerts</th>
+              <th class="sortable" data-sort-key="gl" style="width: 150px;">${sortLabel("gl", "L1")}</th>
+              <th class="sortable" data-sort-key="pm" style="width: 150px;">${sortLabel("pm", "L2")}</th>
+              <th style="width: 120px;">Action</th>
+            </tr></thead>
+            <tbody>${rows.map(renderRow).join("")}</tbody>
+          </table>
+        </div>
+      </section>`;
+  }).join("");
+  document.getElementById("app").innerHTML = output;
+}
+function openSplitDialog(groupId) {
+  selectedGroupId = groupId;
+  const row = buildRows().find(r => r.groupId === groupId);
+  if (!row) return;
+  document.getElementById("splitCount").min = 1;
+  document.getElementById("splitCount").max = row.rowHeadcount;
+  document.getElementById("splitCount").value = row.rowHeadcount;
+  const tls = uniqueSorted(people.map(p => p.tl || "Unassigned TL")).filter(tl => tl !== row.tl);
+  document.getElementById("targetTl").innerHTML = tls.map(tl => `<option value="${escapeHtml(tl)}">${escapeHtml(tl)}</option>`).join("");
+  document.getElementById("splitDetails").innerHTML = `<b>${escapeHtml(row.workstream)}</b><br>Role: ${escapeHtml(row.role)}<br>Workflow: ${escapeHtml(row.workflow)}<br>Current TL: ${escapeHtml(row.tl)}<br>Location: ${escapeHtml(row.location)}<br>Available row headcount: ${row.rowHeadcount}`;
+  document.getElementById("splitDialog").showModal();
+}
+function applySplit() {
+  const row = buildRows().find(r => r.groupId === selectedGroupId);
+  if (!row) return;
+  const count = Number(document.getElementById("splitCount").value);
+  const targetTl = document.getElementById("targetTl").value;
+  if (!targetTl || targetTl === row.tl) { alert("Choose a different TL."); return; }
+  if (!Number.isInteger(count) || count < 1 || count > row.rowHeadcount) { alert(`Enter a headcount between 1 and ${row.rowHeadcount}.`); return; }
+  pushUndoSnapshot();
+  const targetInfo = getTlLocation(targetTl);
+  row.people.slice(0, count).forEach(person => {
+    captureOriginal(originalPersonTl, person.idx, person.tl);
+    person.tl = targetTl;
+    person.tlEmail = targetInfo.email || "";
+    person.tlEmpId = targetInfo.empId || "";
+    applyGlFromTl(person);
+    person.glManuallySet = true;
+    applyPmFromTl(person);
+    updateRawFromNormalized(person);
+  });
+  document.getElementById("splitDialog").close();
+  render();
+}
+function moveWholeRowToTarget(sourceGroupId, targetGroupId) {
+  const source = buildRows().find(r => r.groupId === sourceGroupId);
+  const target = buildRows().find(r => r.groupId === targetGroupId);
+  if (!source || !target || source.groupId === target.groupId) return;
+  if (source.workstream !== target.workstream) {
+    alert("Rows can only be dragged into another row within the same Primary Workstream.");
+    return;
+  }
+  pushUndoSnapshot();
+  const targetInfo = getTlLocation(target.tl);
+  source.people.forEach(person => {
+    captureOriginal(originalPersonTl, person.idx, person.tl);
+    person.tl = target.tl;
+    person.tlEmail = targetInfo.email || "";
+    person.tlEmpId = targetInfo.empId || "";
+    applyGlFromTl(person);
+    person.glManuallySet = true;
+    applyPmFromTl(person);
+    updateRawFromNormalized(person);
+  });
+  render();
+}
+function setTlSelection(workstream, tl, selected) {
+  if (!selectedTlsByWorkstream[workstream]) selectedTlsByWorkstream[workstream] = [];
+  const current = new Set(selectedTlsByWorkstream[workstream]);
+  if (selected) current.add(tl);
+  else current.delete(tl);
+  selectedTlsByWorkstream[workstream] = [...current].sort((a, b) => a.localeCompare(b));
+  render();
+}
+function clearSelection(workstream) {
+  selectedTlsByWorkstream[workstream] = [];
+  render();
+}
+function autoBalanceSelected(workstream) {
+  const selectedTls = selectedTlsByWorkstream[workstream] || [];
+  if (selectedTls.length < 2) { alert("Select at least two TLs in this workstream to auto balance."); return; }
+  const selectedPeople = people.filter(p => (p.workstream || "Unassigned Workstream") === workstream && selectedTls.includes(p.tl || "Unassigned TL"));
+  if (!selectedPeople.length) { alert("No Operators or Buffers found for the selected TLs in this workstream."); return; }
+  pushUndoSnapshot();
+  const total = selectedPeople.length;
+  const base = Math.floor(total / selectedTls.length);
+  const remainder = total % selectedTls.length;
+  const targetCounts = {};
+  selectedTls.forEach((tl, index) => targetCounts[tl] = base + (index < remainder ? 1 : 0));
+  const byTl = {};
+  selectedTls.forEach(tl => byTl[tl] = selectedPeople.filter(p => (p.tl || "Unassigned TL") === tl));
+  const over = [];
+  const under = [];
+  selectedTls.forEach(tl => {
+    const diff = byTl[tl].length - targetCounts[tl];
+    if (diff > 0) over.push({ tl, extra: diff, people: byTl[tl].slice(0, diff) });
+    if (diff < 0) under.push({ tl, need: Math.abs(diff) });
+  });
+  let overIndex = 0;
+  for (const receiver of under) {
+    let need = receiver.need;
+    const targetInfo = getTlLocation(receiver.tl);
+    while (need > 0 && overIndex < over.length) {
+      const donor = over[overIndex];
+      const person = donor.people.pop();
+      if (person) {
+        captureOriginal(originalPersonTl, person.idx, person.tl);
+        person.tl = receiver.tl;
+        person.tlEmail = targetInfo.email || "";
+        person.tlEmpId = targetInfo.empId || "";
+        applyGlFromTl(person);
+        person.glManuallySet = true;
+        applyPmFromTl(person);
+        updateRawFromNormalized(person);
+        need -= 1;
+        donor.extra -= 1;
+      }
+      if (!donor.people.length || donor.extra <= 0) overIndex += 1;
+    }
+  }
+  render();
+}
+function updateTlRowsForExport() {
+  const tls = uniqueSorted(people.map(p => p.tl || ""));
+  for (const tl of tls) {
+    const tlRow = staffRows.find(row => roleType(row.role) === "tl" && row.name === tl);
+    if (!tlRow) continue;
+    const assigned = people.filter(p => p.tl === tl);
+    const glCounts = countPairs(assigned, p => p.glName || "");
+    const glName = glCounts[0]?.[0] || "";
+    if (glName) {
+      const gl = getGlInfo(glName);
+      tlRow.glName = gl.name;
+      tlRow.glEmail = gl.email || "";
+      tlRow.glEmpId = gl.empId || "";
+      updateRawFromNormalized(tlRow);
+    }
+  }
+}
+
+function syncAllRowsToImportStructure() {
+  // Push current normalized tool values back into the original uploaded row objects.
+  // This keeps the export identical to the import structure: same columns, same order, same row count.
+  staffRows.forEach(item => updateRawFromNormalized(item));
+  updateTlRowsForExport();
+}
+
+function collectExportWarnings() {
+  const problemColors = new Set([ALERT_COLOR_STRUCTURE, ALERT_COLOR_EMPID, ALERT_COLOR_ALIGN, ALERT_COLOR_MISMATCH]);
+  const warnings = [];
+  buildRows().forEach(row => {
+    getRowAlerts(row).forEach(a => {
+      if (problemColors.has(a.color)) warnings.push(`${row.tl}: ${a.text}`);
+    });
+  });
+  return warnings;
+}
+
+function downloadAssignments() {
+  if (!staffRows.length || !rawHeaders.length) {
+    alert("Upload a CSV before downloading.");
+    return;
+  }
+
+  const warnings = collectExportWarnings();
+  if (warnings.length) {
+    const preview = warnings.slice(0, 15).join("\n");
+    const more = warnings.length > 15 ? `\n...and ${warnings.length - 15} more` : "";
+    const proceed = confirm(
+      `Heads up: ${warnings.length} issue${warnings.length > 1 ? "s" : ""} still flagged in the Alerts column before you export:\n\n${preview}${more}\n\nDownload anyway?`
+    );
+    if (!proceed) return;
+  }
+
+  syncAllRowsToImportStructure();
+
+  const lines = [rawHeaders.map(csvEscape).join(",")];
+  for (const rowObj of rawRows) {
+    lines.push(rawHeaders.map(h => csvEscape(rowObj[h] ?? "")).join(","));
+  }
+
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "team_list_export_matched_to_import.csv";
+  link.click();
+  URL.revokeObjectURL(url);
+}
+document.getElementById("fileUpload").addEventListener("change", handleFileUpload);
+document.getElementById("downloadBtn").addEventListener("click", downloadAssignments);
+document.getElementById("cancelSplit").addEventListener("click", () => document.getElementById("splitDialog").close());
+document.getElementById("confirmSplit").addEventListener("click", applySplit);
+document.getElementById("app").addEventListener("click", event => {
+  const splitButton = event.target.closest(".split-btn");
+  if (splitButton) openSplitDialog(splitButton.dataset.groupId);
+  const sortHeader = event.target.closest("th.sortable");
+  if (sortHeader) setSort(sortHeader.dataset.sortKey);
+  const balanceButton = event.target.closest(".auto-balance-btn");
+  if (balanceButton) autoBalanceSelected(balanceButton.dataset.workstream);
+  const clearButton = event.target.closest(".clear-selection-btn");
+  if (clearButton) clearSelection(clearButton.dataset.workstream);
+  const toggleButton = event.target.closest(".toggle-people-btn");
+  if (toggleButton) togglePeopleExpand(toggleButton.dataset.groupId);
+  const alertTagClick = event.target.closest(".alerts-cell .tag");
+  if (alertTagClick) {
+    const alertsCell = alertTagClick.closest(".alerts-cell");
+    toggleAlertDetails(alertsCell.dataset.groupId, alertTagClick.dataset.alertIndex);
+  }
+});
+document.getElementById("app").addEventListener("dblclick", event => {
+  const alertsCell = event.target.closest(".alerts-cell");
+  if (alertsCell) togglePeopleExpand(alertsCell.dataset.groupId);
+});
+document.getElementById("app").addEventListener("change", event => {
+  const checkbox = event.target.closest(".tl-select");
+  if (checkbox) setTlSelection(checkbox.dataset.workstream, checkbox.dataset.tl, checkbox.checked);
+  const glSelect = event.target.closest(".row-gl-select");
+  if (glSelect && glSelect.value !== "__KEEP__") applyRowGl(glSelect.dataset.groupId, glSelect.value);
+  const personGlSelect = event.target.closest(".person-gl-select");
+  if (personGlSelect) applyPersonGl(personGlSelect.dataset.personIdx, personGlSelect.value);
+  const personTlSelect = event.target.closest(".person-tl-select");
+  if (personTlSelect) applyPersonTl(personTlSelect.dataset.personIdx, personTlSelect.value);
+  const rowPmSelect = event.target.closest(".row-pm-select");
+  if (rowPmSelect) applyRowPm(rowPmSelect.dataset.groupId, rowPmSelect.value);
+});
+document.getElementById("app").addEventListener("dragstart", event => {
+  const row = event.target.closest("tr.draggable-row");
+  if (!row) return;
+  event.dataTransfer.setData("text/group-id", row.dataset.groupId);
+  event.dataTransfer.effectAllowed = "move";
+  row.classList.add("dragging");
+});
+document.getElementById("app").addEventListener("dragend", event => {
+  const row = event.target.closest("tr.draggable-row");
+  if (row) row.classList.remove("dragging");
+  document.querySelectorAll("tr.drop-target").forEach(el => el.classList.remove("drop-target"));
+});
+document.getElementById("app").addEventListener("dragover", event => {
+  const row = event.target.closest("tr.draggable-row");
+  if (!row) return;
+  event.preventDefault();
+  row.classList.add("drop-target");
+});
+document.getElementById("app").addEventListener("dragleave", event => {
+  const row = event.target.closest("tr.draggable-row");
+  if (row) row.classList.remove("drop-target");
+});
+document.getElementById("app").addEventListener("drop", event => {
+  const row = event.target.closest("tr.draggable-row");
+  if (!row) return;
+  event.preventDefault();
+  row.classList.remove("drop-target");
+  const sourceGroupId = event.dataTransfer.getData("text/group-id");
+  const targetGroupId = row.dataset.groupId;
+  moveWholeRowToTarget(sourceGroupId, targetGroupId);
+});
+document.addEventListener("keydown", event => {
+  const key = event.key.toLowerCase();
+  if ((event.ctrlKey || event.metaKey) && key === "z" && !event.shiftKey) {
+    event.preventDefault();
+    undo();
+  }
+});
+render();
+</script>
+</body>
+</html>
