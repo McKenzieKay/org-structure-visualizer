@@ -119,6 +119,13 @@ button.secondary { background: #ffffff; border-color: #d1d5db; color: #374151; }
   background: #f9fafb;
 }
 .gl-card-name { font-weight: bold; margin-bottom: 5px; }
+/* Lead summary cards: a strip across the top in the same color as that lead's dropdowns below */
+.person-card { border-top: 6px solid #64748b; position: relative; }
+.lead-edit-btn { position: absolute; top: 8px; right: 8px; font: inherit; font-size: 12px; padding: 2px 10px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; cursor: pointer; }
+.lead-edit-btn:hover { background: #f3f4f6; }
+/* Same Edit button inside the tables, sitting in its own cell instead of a card corner */
+.row-edit-btn { position: static; }
+.lead-name { font-size: 17px; color: #111827; margin-bottom: 6px; }
 .gl-card-hc { font-size: 22px; font-weight: bold; line-height: 1; }
 .gl-card-sub { color: #4b5563; margin: 4px 0 6px; }
 .gl-card-section-label {
@@ -128,12 +135,18 @@ button.secondary { background: #ffffff; border-color: #d1d5db; color: #374151; }
   text-transform: uppercase;
   margin: 6px 0 3px;
 }
-.workstream-section {
+/* Workflow tags in the summaries jump down to that workflow's table */
+.wf-jump { font: inherit; cursor: pointer; }
+.wf-jump:hover { text-decoration: underline; }
+.workflow-section { scroll-margin-top: 12px; }
+.workflow-section.jump-flash { animation: jumpFlash 1.6s ease-out; }
+@keyframes jumpFlash { 0%, 30% { box-shadow: 0 0 0 4px #3b82f6; } 100% { box-shadow: 0 0 0 4px transparent; } }
+.workflow-section {
   background: white;
   border: 1px solid #d1d5db;
   margin-bottom: 12px;
 }
-.workstream-header {
+.workflow-header {
   background: #f3f4f6;
   color: #111827;
   padding: 10px;
@@ -151,7 +164,6 @@ button.secondary { background: #ffffff; border-color: #d1d5db; color: #374151; }
   color: #111827;
   margin-bottom: 6px;
 }
-.workflow-bracket { color: #6b7280; font-weight: normal; font-size: 13px; }
 .summary-grid {
   display: flex;
   flex-wrap: wrap;
@@ -164,7 +176,7 @@ button.secondary { background: #ffffff; border-color: #d1d5db; color: #374151; }
   color: #374151;
   margin-right: 2px;
 }
-.workstream-actions {
+.workflow-actions {
   display: flex;
   gap: 7px;
   align-items: center;
@@ -198,6 +210,7 @@ tr.dragging { opacity: .45; }
 tr.drop-target { outline: 2px solid #2563eb; outline-offset: -2px; }
 .count { text-align: center; font-variant-numeric: tabular-nums; }
 .tl-name { font-weight: bold; white-space: nowrap; }
+.team-size { font-weight: normal; color: #6b7280; }
 .action-cell { white-space: nowrap; }
 .alerts-cell { white-space: nowrap; overflow-x: auto; max-width: 0; }
 .action-cell button { margin-right: 4px; }
@@ -208,6 +221,8 @@ tr.alert-details-row td { border-top: none; }
 .alerts-cell .tag { cursor: pointer; }
 .person-name { padding-left: 18px; color: #374151; }
 .toggle-people-btn { cursor: pointer; }
+.toggle-people-btn:hover { text-decoration: underline; }
+.lead-readonly { display: inline-block; padding: 2px 6px; color: #374151; white-space: nowrap; }
 select {
   width: 100%;
   padding: 3px 5px;
@@ -227,18 +242,17 @@ select {
   font-weight: bold;
 }
 .role-operator { background: #f0fdf4; border-color: #86efac; color: #166534; }
-.role-buffer { background: #fff7ed; border-color: #fdba74; color: #9a3412; }
 .role-plain { background: none; border-color: #d1d5db; color: #111827; }
 .workflow-tag { background: #eef2ff; border-color: #c7d2fe; }
-/* Location colors: Option B - muted business tones with lighter fills */
-.loc-1 { background: #f0f9ff; border-color: #38bdf8; color: #075985; }
-.loc-2 { background: #f8fafc; border-color: #94a3b8; color: #334155; }
-.wfh { background: #fdf2f8; border-color: #f9a8d4; color: #831843; }
-.loc-3 { background: #f5f3ff; border-color: #a78bfa; color: #5b21b6; }
-.loc-4 { background: #fffbeb; border-color: #f59e0b; color: #92400e; }
-.loc-5 { background: #fafaf9; border-color: #a8a29e; color: #44403c; }
-.loc-6 { background: #eff6ff; border-color: #60a5fa; color: #1e40af; }
-.loc-7 { background: #fff7ed; border-color: #fb923c; color: #9a3412; }
+/* Location colors: 7 clearly different hues, handed out in order so no two places share one */
+.loc-1 { background: #eff6ff; border-color: #3b82f6; color: #1e40af; }
+.loc-2 { background: #f5f3ff; border-color: #8b5cf6; color: #5b21b6; }
+.loc-3 { background: #fffbeb; border-color: #f59e0b; color: #92400e; }
+.loc-4 { background: #f7fee7; border-color: #84cc16; color: #3f6212; }
+.loc-5 { background: #f8fafc; border-color: #64748b; color: #334155; }
+/* Teal and red come last: they're also alert colors (Multi Center, mismatches) */
+.loc-6 { background: #f0fdfa; border-color: #14b8a6; color: #115e59; }
+.loc-7 { background: #fef2f2; border-color: #ef4444; color: #991b1b; }
 .loc-other { background: #f9fafb; border-color: #9ca3af; color: #374151; }
 .empty-state {
   background: #ffffff;
@@ -284,7 +298,7 @@ dialog::backdrop { background: rgba(0,0,0,.35); }
 
 .stat-card-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 @media (max-width: 1300px) {
@@ -315,13 +329,13 @@ dialog::backdrop { background: rgba(0,0,0,.35); }
 <body>
 <header>
   <h1>Org Structure Visualizer</h1>
-  <p>Upload a Team List CSV, visualize the PM, GL, TL, Operator, and Buffer structure, make assignment updates, then export using the same rows, columns, and column order as the import.</p>
+  <p>Upload a Team List CSV, visualize the Project Lead, Group Lead, Team Lead, and Operator structure, make assignment updates, then export using the same rows, columns, and column order as the import.</p>
 </header>
 <main>
   <section class="top-upload-download">
     <div class="upload-panel">
       <div>
-        <div class="upload-title">Load assignment data</div>
+        <div class="upload-title">Load Assignment Data</div>
         <div class="upload-subtitle">Supports the original Team List structure and exports back in the same structure.</div>
         <div id="uploadStatus" style="margin-top:6px; font-weight:bold;">No file loaded yet.</div>
       </div>
@@ -329,7 +343,7 @@ dialog::backdrop { background: rgba(0,0,0,.35); }
     </div>
     <div class="download-panel">
       <div>
-        <div class="upload-title">Export updates</div>
+        <div class="upload-title">Export Updates</div>
         <div class="upload-subtitle">Exports the same rows, columns, and column order as the uploaded CSV.</div>
       </div>
       <button id="downloadBtn" class="primary">Download CSV</button>
@@ -339,17 +353,17 @@ dialog::backdrop { background: rgba(0,0,0,.35); }
   <div id="globalStats" class="stats"></div>
 
   <section class="gl-card-panel">
-    <div class="gl-card-title">PM summary</div>
+    <div class="gl-card-title">Project Lead Summary</div>
     <div id="pmCards" class="pm-card-grid"></div>
   </section>
 
   <section class="gl-card-panel">
-    <div class="gl-card-title">GL summary</div>
+    <div class="gl-card-title">Group Lead Summary</div>
     <div id="glCards" class="gl-card-grid"></div>
   </section>
 
   <section class="gl-card-panel">
-    <div class="gl-card-title">Operational stats</div>
+    <div class="gl-card-title">Operational Stats</div>
     <div id="statCards" class="stat-card-grid"></div>
   </section>
 
@@ -361,11 +375,11 @@ dialog::backdrop { background: rgba(0,0,0,.35); }
   <div class="modal-body">
     <div id="splitDetails" class="modal-row"></div>
     <div class="modal-row">
-      <label for="splitCount">Headcount to move</label>
+      <label for="splitCount">Headcount to Move</label>
       <input id="splitCount" type="number" min="1" step="1" />
     </div>
     <div class="modal-row">
-      <label for="targetTl">New TL</label>
+      <label for="targetTl">New Team Lead</label>
       <select id="targetTl"></select>
     </div>
   </div>
@@ -375,12 +389,31 @@ dialog::backdrop { background: rgba(0,0,0,.35); }
   </div>
 </dialog>
 
+<dialog id="leadDialog">
+  <div class="modal-header">Edit <span id="leadDialogName"></span></div>
+  <div class="modal-body">
+    <div class="modal-row">
+      <label for="leadAligned">Aligned to the Project</label>
+      <select id="leadAligned"></select>
+    </div>
+    <div class="modal-row">
+      <label for="leadEmpId">Employee ID</label>
+      <input id="leadEmpId" type="text" autocomplete="off" />
+    </div>
+  </div>
+  <div class="modal-actions">
+    <button id="cancelLead">Cancel</button>
+    <button id="saveLead" class="primary">Save</button>
+  </div>
+</dialog>
+
+<script src="sample-data.js"></script>
 <script>
-// Workstream split highlighting: GL-only = orange, PM-only = yellow, both = red.
+// Workflow split highlighting: GL-only = orange, PM-only = yellow, both = red.
 const SPLIT_COLOR_GL = { border: "#f97316", bg: "#fff7ed" };
 const SPLIT_COLOR_PM = { border: "#eab308", bg: "#fefce8" };
 const SPLIT_COLOR_BOTH = { border: "#ef4444", bg: "#fef2f2" };
-// Unique-per-workstream palette, kept for the PM/GL summary cards (their workstream tags keep
+// Unique-per-workflow palette, kept for the PM/GL summary cards (their workflow tags keep
 // their original distinct color instead of the type-based orange/yellow/red used in the table).
 const MULTI_PM_PALETTE = [
   { border: "#f43f5e", bg: "#fff1f2" },
@@ -407,12 +440,13 @@ let uploadedBaseline = [];
 let selectedGroupId = null;
 let sortKey = "opLocation";
 let sortDirection = "asc";
-let selectedTlsByWorkstream = {};
+let selectedRowsByWorkflow = {};
 let tlLookup = {};
-let workstreamPmInfo = {};
+let workflowPmInfo = {};
 let staffRowByName = {};
 let staffRowByEmpId = {};
 let identityResolver = {};
+let locationColorIndex = {};
 let expandedAlertIndexByGroup = {};
 let expandedGroupIds = new Set();
 // "Change" tracking compares the ORIGINAL value (captured once, before any edits) against the
@@ -488,15 +522,14 @@ function setIfColumn(obj, possibleNames, value) {
 function roleType(role) {
   const r = clean(role).toLowerCase();
   if (r === "operator" || r === "op") return "operator";
-  if (r === "buffer") return "buffer";
   if (r === "tl" || r.includes("team lead") || r.includes("l1")) return "tl";
   if (r === "gl" || r.includes("group lead")) return "gl";
-  if (r === "pm" || r === "sr. pm" || r.includes("project manager")) return "pm";
+  if (r === "pm" || r === "sr. pm" || r.includes("project manager") || r.includes("project lead")) return "pm";
   return r || "other";
 }
 function isAssignableRole(role) {
   const rt = roleType(role);
-  return rt === "operator" || rt === "buffer";
+  return rt === "operator";
 }
 function isAlignedRow(item) {
   const v = clean(item.aligned).toLowerCase();
@@ -512,11 +545,11 @@ function normalizeRow(row, idx) {
   const effectiveLocation = getValue(
     row,
     ["Effective OP Location", "Effective Location", "effectiveLocation"],
-    workLocation.toUpperCase() === "WFH" ? "WFH" : (deliveryCenter || "Unknown")
+    deliveryCenter || workLocation || "Unknown"
   );
   // Newer exports drop the fixed TL/GL/PM columns for a generic "L1 = my manager, L2 = their manager"
-  // scheme, so what L1/L2 mean depends on this row's own role (operator/buffer: L1=TL, L2=GL; GL: L1=PM).
-  const l1Name = getValue(row, ["Assigned L1 Name", "L1 Name", "Assigned TL Name", "TL", "tl", "L1"], "Unassigned TL");
+  // scheme, so what L1/L2 mean depends on this row's own role (operator: L1=TL, L2=GL; GL: L1=PM).
+  const l1Name = getValue(row, ["Assigned L1 Name", "L1 Name", "Assigned TL Name", "TL", "tl", "L1"], "Unassigned Team Lead");
   const l1Email = getValue(row, ["Assigned L1 Email ID", "L1 Email ID", "Assigned TL Email ID", "tlEmail"], "");
   const l1EmpId = getValue(row, ["L1 Emp ID", "Assigned L1 Emp ID", "Assigned TL Emp ID", "L1-EMP ID"], "");
   const l2Name = getValue(row, ["L2"], "");
@@ -526,7 +559,7 @@ function normalizeRow(row, idx) {
   // derived from the TL (applyGlFromTl) when there's no raw value at all, or on a manual
   // TL reassignment — never automatically overriding an existing raw value.
   let glName = getValue(row, ["Assigned GL Name", "GL Name", "glName", "Assigned Group Lead", "Group Lead"], "");
-  if (!glName && (rt === "operator" || rt === "buffer")) {
+  if (!glName && rt === "operator") {
     glName = l2Name;
   }
   const glInfo = getGlInfo(glName);
@@ -548,7 +581,6 @@ function normalizeRow(row, idx) {
     pmEmail: getValue(row, ["L2 Email ID", "PM Email ID"], ""),
     pmEmpId: getValue(row, ["L2 Emp ID", "PM Emp ID"], ""),
     workflow: getValue(row, ["Primary Workflow", "Workflow", "workflow"], "Unknown Workflow"),
-    workstream: getValue(row, ["Primary Workstream", "Workstream", "workstream"], "Unassigned Workstream"),
     workLocation,
     deliveryCenter,
     effectiveLocation,
@@ -559,7 +591,7 @@ function normalizeRow(row, idx) {
     ownL2EmpId: l2EmpId
   };
   // For a GL row, its own L1 is the PM that GL reports to.
-  if (rt === "gl" && l1Name && l1Name !== "Unassigned TL") {
+  if (rt === "gl" && l1Name && l1Name !== "Unassigned Team Lead") {
     item.pmName = item.pmName || l1Name;
     item.pmEmail = item.pmEmail || l1Email;
     item.pmEmpId = item.pmEmpId || l1EmpId;
@@ -575,8 +607,8 @@ function updateRawFromNormalized(item) {
   setIfColumn(row, ["Assigned GL Name", "GL Name"], item.glName);
   setIfColumn(row, ["Assigned GL Email ID", "GL Email ID"], item.glEmail);
   setIfColumn(row, ["Assigned GL Emp ID", "GL Emp ID"], item.glEmpId);
-  if (rt === "operator" || rt === "buffer") {
-    // In the current column scheme, an Operator/Buffer's own L2 field IS their GL.
+  if (rt === "operator") {
+    // In the current column scheme, an Operator's own L2 field IS their GL.
     setIfColumn(row, ["L2"], item.glName);
     setIfColumn(row, ["L2- EMP ID", "L2-EMP ID"], item.glEmpId);
   }
@@ -584,7 +616,6 @@ function updateRawFromNormalized(item) {
   setIfColumn(row, ["L2 Email ID", "PM Email ID"], item.pmEmail);
   setIfColumn(row, ["L2 Emp ID", "PM Emp ID"], item.pmEmpId);
   setIfColumn(row, ["Primary Workflow", "Workflow"], item.workflow);
-  setIfColumn(row, ["Primary Workstream", "Workstream"], item.workstream);
   setIfColumn(row, ["Work Location", "Working Location"], item.workLocation);
   setIfColumn(row, ["Original Delivery Center", "Delivery Center", "Delivery center"], item.deliveryCenter);
   setIfColumn(row, ["Effective OP Location", "Effective Location"], getEffectiveLocation(item));
@@ -595,13 +626,20 @@ function uniqueSorted(values) {
 }
 function locationClass(value) {
   const v = String(value || "").toLowerCase();
-  if (v === "wfh") return "wfh";
-  if (!v.trim()) return "loc-other";
-  // Any location name gets one of 7 colors from a hash of its name, so the same place
-  // always gets the same color without hardcoding specific locations.
+  if (!v.trim() || v === "unknown") return "loc-other";
+  // Locations in the loaded data get colors in order (see rebuildLocationColors), so up to 7
+  // places never share a color. Anything not seen at load falls back to a hash of its name.
+  if (v in locationColorIndex) return "loc-" + (locationColorIndex[v] % 7 + 1);
   let hash = 0;
   for (let i = 0; i < v.length; i++) hash = (hash * 31 + v.charCodeAt(i)) | 0;
   return "loc-" + (Math.abs(hash) % 7 + 1);
+}
+function rebuildLocationColors() {
+  locationColorIndex = {};
+  const places = uniqueSorted(staffRows.flatMap(row => [row.workLocation, row.deliveryCenter, row.effectiveLocation])
+    .map(v => String(v || "").trim().toLowerCase())
+    .filter(Boolean));
+  places.forEach((v, i) => { locationColorIndex[v] = i; });
 }
 // Same hash-based palette as personDotColor, returned as an inline style so a GL tag's color
 // stays consistent wherever that GL's name shows up, without hardcoding real names to classes.
@@ -611,12 +649,10 @@ function glTagStyle(value) {
   return ` style="border-color:${color}; color:${color}; background:transparent;"`;
 }
 function roleClass(role) {
-  const rt = roleType(role);
-  if (rt === "buffer") return "role-buffer";
   return "role-operator";
 }
 function getGlInfo(glName) {
-  if (!glName || glName === "__UNASSIGNED__" || glName === "Unassigned GL") return { name: "Unassigned GL", email: "", empId: "" };
+  if (!glName || glName === "__UNASSIGNED__" || glName === "Unassigned Group Lead") return { name: "Unassigned Group Lead", email: "", empId: "" };
   return GL_CANDIDATES.find(gl => gl.name === glName) || { name: glName, email: "", empId: "" };
 }
 function rebuildIdentityResolver() {
@@ -638,7 +674,7 @@ function rebuildStaffRowByName() {
     const existing = staffRowByName[row.name];
     if (!existing) { staffRowByName[row.name] = row; return; }
     // Two different people can share a display name (e.g. an Operator and an unrelated TL with
-    // the same name). When that happens, prefer whichever row is NOT an Operator/Buffer,
+    // the same name). When that happens, prefer whichever row is NOT an Operator,
     // since that's who's actually being referenced as someone's manager.
     if (isAssignableRole(existing.role) && !isAssignableRole(row.role)) {
       staffRowByName[row.name] = row;
@@ -647,6 +683,56 @@ function rebuildStaffRowByName() {
 }
 // Emp ID is the true unique identifier — use this instead of name wherever we have an emp ID
 // to look up with, since names collide (multiple real people can share a display name).
+// Edit a lead's own roster row (aligned status and Emp ID) from the Edit button on their summary card
+let editingLeadRow = null;
+function openLeadDialog(name, empId) {
+  const own = findOwnRow(name, empId);
+  if (!own) { alert(`${name} has no row of their own in the roster, so there's nothing to edit.`); return; }
+  editingLeadRow = own;
+  document.getElementById("leadDialogName").textContent = own.name;
+  const current = own.aligned || "";
+  const choices = ["Aligned", "Not Aligned"];
+  if (current && !choices.some(c => c.toLowerCase() === current.toLowerCase())) choices.push(current);
+  const selected = isAlignedRow(own) ? "Aligned" : (choices.find(c => c.toLowerCase() === current.toLowerCase()) || "Not Aligned");
+  document.getElementById("leadAligned").innerHTML = choices
+    .map(c => `<option value="${escapeHtml(c)}"${c === selected ? " selected" : ""}>${escapeHtml(c)}</option>`).join("");
+  document.getElementById("leadEmpId").value = own.empId || "";
+  document.getElementById("leadDialog").showModal();
+}
+function saveLeadEdit() {
+  const own = editingLeadRow;
+  if (!own) return;
+  const aligned = document.getElementById("leadAligned").value;
+  const empId = clean(document.getElementById("leadEmpId").value);
+  if (!empId) { alert("Enter an Employee ID."); return; }
+  const clash = staffRowByEmpId[empId.toUpperCase()];
+  if (clash && clash !== own) { alert(`Employee ID ${empId} already belongs to ${clash.name}.`); return; }
+  pushUndoSnapshot();
+  const oldEmpId = own.empId || "";
+  own.aligned = aligned;
+  own.empId = empId;
+  setIfColumn(own.raw, ["Aligned", "aligned", "Status"], aligned);
+  setIfColumn(own.raw, ["Emp ID", "Employee ID", "empId"], empId);
+  // A new ID replaces the old one everywhere this person is referenced (as anyone's L1, L2,
+  // Group Lead or Project Lead), so the export stays consistent. Emp IDs are unique, so an
+  // exact match on the old ID can only be this person.
+  if (oldEmpId && oldEmpId.toUpperCase() !== empId.toUpperCase()) {
+    const idColumns = rawHeaders.filter(h => /emp\s*-?\s*id|employee\s*id/i.test(h));
+    rawRows.forEach(raw => idColumns.forEach(h => {
+      if (clean(raw[h]).toUpperCase() === oldEmpId.toUpperCase()) raw[h] = empId;
+    }));
+    staffRows.forEach(row => ["tlEmpId", "glEmpId", "pmEmpId", "ownL2EmpId"].forEach(key => {
+      if (row[key] && row[key].toUpperCase() === oldEmpId.toUpperCase()) row[key] = empId;
+    }));
+  }
+  [TL_CANDIDATES, GL_CANDIDATES, PM_CANDIDATES].forEach(list => list.filter(c => c.name === own.name).forEach(c => {
+    c.empId = empId;
+    c.aligned = isAlignedRow(own);
+  }));
+  rebuildStaffRowByEmpId();
+  document.getElementById("leadDialog").close();
+  render();
+}
 function rebuildStaffRowByEmpId() {
   staffRowByEmpId = {};
   // Keyed case-insensitively — "I18414" and "i18414" are the same Emp ID, just typed differently.
@@ -660,11 +746,11 @@ function rebuildStaffRowByEmpId() {
 // field is blank, or it doesn't correspond to any real Emp ID in the roster. This is exactly
 // what makes name-based resolution unreliable (e.g. two people with the same name).
 function tlEmpIdIssue(tlName, tlEmpId) {
-  if (!tlName || tlName === "Unassigned TL") return null;
+  if (!tlName || tlName === "Unassigned Team Lead") return null;
   const byName = staffRowByName[tlName];
   const onFileId = byName ? (byName.empId || "none on file") : "no record found by name";
-  if (!tlEmpId) return `Operator's L1-EMP ID is blank for TL "${tlName}" (resolved by name only; their own record shows Emp ID "${onFileId}")`;
-  if (!staffRowByEmpId[tlEmpId.toUpperCase()]) return `Operator's L1-EMP ID "${tlEmpId}" for TL "${tlName}" doesn't match any Emp ID in the roster (their own record shows Emp ID "${onFileId}")`;
+  if (!tlEmpId) return `Operator's Team Lead Emp ID is blank for Team Lead "${tlName}" (resolved by name only; their own record shows Emp ID "${onFileId}")`;
+  if (!staffRowByEmpId[tlEmpId.toUpperCase()]) return `Operator's Team Lead Emp ID "${tlEmpId}" for Team Lead "${tlName}" doesn't match any Emp ID in the roster (their own record shows Emp ID "${onFileId}")`;
   return null;
 }
 // Resolves "this person's own record" preferring emp ID (unambiguous) over name (can collide).
@@ -683,6 +769,7 @@ function findOwnRow(name, empId) {
 function applyPmFromTl(person) {
   const tlRow = findOwnRow(person.tl, person.tlEmpId);
   if (!tlRow) {
+    if (person.pmManuallySet) return; // keep a Project Lead picked by hand for an off-roster Team Lead
     person.pmName = "";
     person.pmEmail = "";
     person.pmEmpId = "";
@@ -706,7 +793,7 @@ function applyPmFromTl(person) {
 function applyGlFromTl(person) {
   const tlRow = findOwnRow(person.tl, person.tlEmpId);
   const glName = tlRow ? resolveIdentity(tlRow.tl) : "";
-  if (!glName || glName === "Unassigned TL") return;
+  if (!glName || glName === "Unassigned Team Lead") return;
   const glOwnRow = findOwnRow(glName, tlRow.tlEmpId);
   const glInfo = getGlInfo(glName);
   person.glName = glName;
@@ -729,32 +816,32 @@ function personGlMismatch(person) {
 function getTlOwnGl(tlName, tlEmpId) {
   const tlRow = findOwnRow(tlName, tlEmpId);
   const gl = tlRow ? resolveIdentity(tlRow.tl) : "";
-  return gl && gl !== "Unassigned TL" ? gl : "Unassigned GL";
+  return gl && gl !== "Unassigned Team Lead" ? gl : "Unassigned Group Lead";
 }
 // Flags a TL name that doesn't correspond to an actual TL-type record in the roster —
 // e.g. operators pointing to a GL or some other non-TL person as their direct manager.
 function tlStructureMismatch(tlName, tlEmpId) {
-  if (!tlName || tlName === "Unassigned TL") return null;
+  if (!tlName || tlName === "Unassigned Team Lead") return null;
   const tlRow = findOwnRow(tlName, tlEmpId);
   if (!tlRow) return "No matching record found in the roster";
-  if (roleType(tlRow.role) !== "tl") return `Listed as Type="${tlRow.role}", not TL`;
+  if (roleType(tlRow.role) !== "tl") return `Listed as '${tlRow.role}'`;
   return null;
 }
 // Same check one level up: flags when a TL's own L2 doesn't resolve to an actual PM-type
 // record — e.g. the chain breaks because that name is a GL, an AM, or not found at all.
 function pmStructureMismatch(pmName, pmEmpId) {
-  if (!pmName || pmName === "Unassigned PM") return null;
+  if (!pmName || pmName === "Unassigned Project Lead") return null;
   const pmRow = findOwnRow(pmName, pmEmpId);
   if (!pmRow) return "No matching record found in the roster";
-  if (roleType(pmRow.role) !== "pm") return `Listed as Type="${pmRow.role}", not PM`;
+  if (roleType(pmRow.role) !== "pm") return `Listed as '${pmRow.role}'`;
   return null;
 }
 // Same idea, one level down: flags a GL card whose own record isn't actually Type=GL.
 function glStructureMismatch(glName, glEmpId) {
-  if (!glName || glName === "Unassigned GL") return null;
+  if (!glName || glName === "Unassigned Group Lead") return null;
   const glRow = findOwnRow(glName, glEmpId);
   if (!glRow) return "No matching record found in the roster";
-  if (roleType(glRow.role) !== "gl") return `Listed as Type="${glRow.role}", not GL`;
+  if (roleType(glRow.role) !== "gl") return `Listed as '${glRow.role}'`;
   return null;
 }
 // Orphan check: this row's people are aligned (they're in `people` at all), but their TL's
@@ -804,47 +891,59 @@ function applyPersonTl(personIdx, tlName) {
 // hashing the name against a fixed palette (not by matching specific real names), so this works
 // for whatever GLs/PMs happen to be in the uploaded data.
 const PERSON_COLOR_PALETTE = ["#3b82f6", "#f97316", "#8b5cf6", "#14b8a6", "#111827", "#84cc16", "#ca8a04", "#0891b2", "#e11d48", "#7c3aed", "#059669", "#be185d"];
+// Leads in the loaded data get colors in order (see rebuildPersonColors), so up to 12 Group and
+// Project Leads never share a color. Names not seen at load fall back to a hash of the name.
+let personColorIndex = {};
+function rebuildPersonColors() {
+  personColorIndex = {};
+  const leads = uniqueSorted(staffRows.filter(row => ["gl", "pm"].includes(roleType(row.role))).map(row => row.name)
+    .concat(people.map(p => p.glName), people.map(p => p.pmName))
+    .filter(name => name && !name.startsWith("Unassigned") && !name.startsWith("No ")));
+  leads.forEach((name, i) => { personColorIndex[name] = i; });
+}
 function personDotColor(name) {
   const v = String(name || "").trim();
   if (!v) return "#64748b";
+  if (v in personColorIndex) return PERSON_COLOR_PALETTE[personColorIndex[v] % PERSON_COLOR_PALETTE.length];
   let hash = 0;
   for (let i = 0; i < v.length; i++) hash = (hash * 31 + v.charCodeAt(i)) | 0;
   return PERSON_COLOR_PALETTE[Math.abs(hash) % PERSON_COLOR_PALETTE.length];
 }
 function stripeDropdownStyle(name) {
-  if (!name || name.startsWith("Unassigned")) return "";
+  // A missing lead gets a bright red bar so it stands out as something to fix
+  if (!name || name.startsWith("Unassigned") || name.startsWith("No ")) return "border-left: 5px solid #ef4444; padding-left: 6px;";
   return `border-left: 5px solid ${personDotColor(name)}; padding-left: 6px;`;
 }
 function glOptions(selectedName) {
-  const current = selectedName || "Unassigned GL";
-  const options = ['<option value="Unassigned GL">Unassigned GL</option>']
-    .concat(GL_CANDIDATES.map(gl => `<option value="${escapeHtml(gl.name)}">${escapeHtml(gl.name)}</option>`));
+  const current = selectedName || "Unassigned Group Lead";
+  const options = ['<option value="Unassigned Group Lead">Unassigned Group Lead</option>']
+    .concat(GL_CANDIDATES.map(gl => `<option value="${escapeHtml(gl.name)}">${escapeHtml(gl.name)}${gl.aligned === false ? " (Not Aligned)" : ""}</option>`));
   let html = options.join("");
-  if (current && !GL_CANDIDATES.some(gl => gl.name === current) && current !== "Unassigned GL") {
+  if (current && !GL_CANDIDATES.some(gl => gl.name === current) && current !== "Unassigned Group Lead") {
     html = `<option value="${escapeHtml(current)}">${escapeHtml(current)}</option>` + html;
   }
   return html.replace(`value="${escapeHtml(current)}"`, `value="${escapeHtml(current)}" selected`);
 }
 function tlOptions(selectedName) {
-  const current = selectedName || "Unassigned TL";
-  const options = ['<option value="Unassigned TL">Unassigned TL</option>']
-    .concat(TL_CANDIDATES.map(tl => `<option value="${escapeHtml(tl.name)}">${escapeHtml(tl.name)}</option>`));
+  const current = selectedName || "Unassigned Team Lead";
+  const options = ['<option value="Unassigned Team Lead">Unassigned Team Lead</option>']
+    .concat(TL_CANDIDATES.map(tl => `<option value="${escapeHtml(tl.name)}">${escapeHtml(tl.name)}${tl.aligned === false ? " (Not Aligned)" : ""}</option>`));
   let html = options.join("");
-  if (current && !TL_CANDIDATES.some(tl => tl.name === current) && current !== "Unassigned TL") {
+  if (current && !TL_CANDIDATES.some(tl => tl.name === current) && current !== "Unassigned Team Lead") {
     html = `<option value="${escapeHtml(current)}">${escapeHtml(current)}</option>` + html;
   }
   return html.replace(`value="${escapeHtml(current)}"`, `value="${escapeHtml(current)}" selected`);
 }
 function getPmInfo(pmName) {
-  if (!pmName || pmName === "Unassigned PM") return { name: "Unassigned PM", email: "", empId: "" };
+  if (!pmName || pmName === "Unassigned Project Lead") return { name: "Unassigned Project Lead", email: "", empId: "" };
   return PM_CANDIDATES.find(pm => pm.name === pmName) || { name: pmName, email: "", empId: "" };
 }
 function pmOptions(selectedName) {
-  const current = selectedName || "Unassigned PM";
-  const options = ['<option value="Unassigned PM">Unassigned PM</option>']
-    .concat(PM_CANDIDATES.map(pm => `<option value="${escapeHtml(pm.name)}">${escapeHtml(pm.name)}</option>`));
+  const current = selectedName || "Unassigned Project Lead";
+  const options = ['<option value="Unassigned Project Lead">Unassigned Project Lead</option>']
+    .concat(PM_CANDIDATES.map(pm => `<option value="${escapeHtml(pm.name)}">${escapeHtml(pm.name)}${pm.aligned === false ? " (Not Aligned)" : ""}</option>`));
   let html = options.join("");
-  if (current && !PM_CANDIDATES.some(pm => pm.name === current) && current !== "Unassigned PM") {
+  if (current && !PM_CANDIDATES.some(pm => pm.name === current) && current !== "Unassigned Project Lead") {
     html = `<option value="${escapeHtml(current)}">${escapeHtml(current)}</option>` + html;
   }
   return html.replace(`value="${escapeHtml(current)}"`, `value="${escapeHtml(current)}" selected`);
@@ -853,7 +952,7 @@ function renderRowPmDropdown(row) {
   return `<select class="row-pm-select" style="${stripeDropdownStyle(row.pm)}" data-group-id="${escapeHtml(row.groupId)}">${pmOptions(row.pm)}</select>`;
 }
 // Manual L1/L2 edits from the row dropdowns apply only to this specific row (this workflow +
-// workstream + TL + location + role slot), not TL-wide — a row-level override stored by groupId,
+// workflow + TL + location + role slot), not TL-wide — a row-level override stored by groupId,
 // which wins over the TL's raw-data default (getTlOwnGl / the TL's own L2) until cleared.
 // L1/L2 dropdowns on a row edit that TL's actual record — so the change shows up on every row
 // for that TL (not just the one clicked) and persists correctly to the exported CSV, since GL/PM
@@ -862,7 +961,23 @@ function applyRowPm(groupId, pmName) {
   const row = buildRows().find(r => r.groupId === groupId);
   if (!row) return;
   const tlRow = findOwnRow(row.tl, row.tlEmpId);
-  if (!tlRow) return;
+  if (!tlRow) {
+    // The Team Lead has no record of their own (not on the roster), so set the Project Lead
+    // directly on their people instead of on the Team Lead's row.
+    pushUndoSnapshot();
+    captureOriginal(originalRowPm, row.tlEmpId || row.tl, row.pm);
+    const info = getPmInfo(pmName);
+    const pmOwnRow = staffRowByName[pmName];
+    people.filter(p => p.tl === row.tl).forEach(p => {
+      p.pmName = info.name;
+      p.pmEmail = pmOwnRow ? (pmOwnRow.email || "") : (info.email || "");
+      p.pmEmpId = pmOwnRow ? (pmOwnRow.empId || "") : (info.empId || "");
+      p.pmManuallySet = true;
+      updateRawFromNormalized(p);
+    });
+    render();
+    return;
+  }
   pushUndoSnapshot();
   captureOriginal(originalRowPm, tlRow.empId || row.tl, row.pm);
   const pmInfo = getPmInfo(pmName);
@@ -883,9 +998,9 @@ function applyRowPm(groupId, pmName) {
   const glRow = findOwnRow(glName, tlRow.tlEmpId);
   if (glRow && roleType(glRow.role) === "gl") {
     const glPeople = people.filter(p => p.glName === glName);
-    const pmCounts = countPairs(glPeople, p => p.pmName || "No PM");
+    const pmCounts = countPairs(glPeople, p => p.pmName || "No Project Lead");
     const winningPm = pmCounts[0]?.[0];
-    if (winningPm && winningPm !== "No PM") {
+    if (winningPm && winningPm !== "No Project Lead") {
       const winningPmInfo = getPmInfo(winningPm);
       const winningPmOwnRow = staffRowByName[winningPm];
       glRow.tl = winningPmInfo.name;
@@ -902,7 +1017,22 @@ function applyRowGl(groupId, glName) {
   const row = buildRows().find(r => r.groupId === groupId);
   if (!row) return;
   const tlRow = findOwnRow(row.tl, row.tlEmpId);
-  if (!tlRow) return;
+  if (!tlRow) {
+    // The Team Lead has no record of their own (not on the roster), so set the Group Lead
+    // directly on their people instead of on the Team Lead's row.
+    pushUndoSnapshot();
+    captureOriginal(originalRowGl, row.tlEmpId || row.tl, row.primaryGl);
+    const info = getGlInfo(glName);
+    people.filter(p => p.tl === row.tl).forEach(p => {
+      p.glName = info.name;
+      p.glEmail = info.email || "";
+      p.glEmpId = info.empId || "";
+      p.glManuallySet = true;
+      updateRawFromNormalized(p);
+    });
+    render();
+    return;
+  }
   pushUndoSnapshot();
   captureOriginal(originalRowGl, tlRow.empId || row.tl, row.primaryGl);
   const glInfo = getGlInfo(glName);
@@ -920,14 +1050,14 @@ function applyRowGl(groupId, glName) {
   render();
 }
 function getEffectiveLocation(person) {
-  return person.effectiveLocation || (String(person.workLocation || "").toUpperCase() === "WFH" ? "WFH" : (person.deliveryCenter || "Unknown"));
+  return person.effectiveLocation || person.deliveryCenter || person.workLocation || "Unknown";
 }
 function rebuildTlLookup() {
   tlLookup = {};
   for (const row of staffRows) {
     if (!row.name) continue;
     const rt = roleType(row.role);
-    // TL rows give best TL metadata, but operator/buffer rows can also fill lookup from their TL assignment.
+    // TL rows give best TL metadata, but operator rows can also fill lookup from their TL assignment.
     if (rt === "tl") {
       tlLookup[row.name] = {
         email: row.email || "",
@@ -997,15 +1127,17 @@ function loadFromRawRows(sourceName) {
     row.deliveryCenter = canonicalizeLocation(row.deliveryCenter);
     row.effectiveLocation = canonicalizeLocation(row.effectiveLocation);
   });
+  rebuildLocationColors();
 
   // TL and PM candidates are fully derived from the data each load (no hardcoded seed needed).
   TL_CANDIDATES = [];
-  staffRows.filter(row => roleType(row.role) === "tl" && row.name && isAlignedRow(row)).forEach(row => {
-    TL_CANDIDATES.push({ name: row.name, email: row.email || "", empId: row.empId || "" });
+  // Every lead on the roster is offered, including ones marked not aligned (labeled as such)
+  staffRows.filter(row => roleType(row.role) === "tl" && row.name).forEach(row => {
+    TL_CANDIDATES.push({ name: row.name, email: row.email || "", empId: row.empId || "", aligned: isAlignedRow(row) });
   });
   PM_CANDIDATES = [];
-  staffRows.filter(row => roleType(row.role) === "pm" && row.name && isAlignedRow(row)).forEach(row => {
-    PM_CANDIDATES.push({ name: row.name, email: row.email || "", empId: row.empId || "" });
+  staffRows.filter(row => roleType(row.role) === "pm" && row.name).forEach(row => {
+    PM_CANDIDATES.push({ name: row.name, email: row.email || "", empId: row.empId || "", aligned: isAlignedRow(row) });
   });
 
   // Learn GL identity (email/empId) from each GL's own row, and register any GL found in the
@@ -1013,8 +1145,8 @@ function loadFromRawRows(sourceName) {
   const glOwnRowByName = {};
   staffRows.filter(row => roleType(row.role) === "gl" && row.name).forEach(row => {
     glOwnRowByName[row.name] = row;
-    if (!GL_CANDIDATES.some(gl => gl.name === row.name) && isAlignedRow(row)) {
-      GL_CANDIDATES.push({ name: row.name, email: row.email || "", empId: row.empId || "" });
+    if (!GL_CANDIDATES.some(gl => gl.name === row.name)) {
+      GL_CANDIDATES.push({ name: row.name, email: row.email || "", empId: row.empId || "", aligned: isAlignedRow(row) });
     }
   });
   staffRows.forEach(row => {
@@ -1024,8 +1156,8 @@ function loadFromRawRows(sourceName) {
     if (!row.glEmpId) row.glEmpId = owner.empId || "";
   });
 
-  const notAlignedCount = staffRows.filter(row => isAssignableRole(row.role) && row.workstream && !isAlignedRow(row)).length;
-  people = staffRows.filter(row => isAssignableRole(row.role) && row.workstream && isAlignedRow(row));
+  const notAlignedCount = staffRows.filter(row => isAssignableRole(row.role) && row.workflow && !isAlignedRow(row)).length;
+  people = staffRows.filter(row => isAssignableRole(row.role) && row.workflow && isAlignedRow(row));
   rebuildTlLookup();
   rebuildIdentityResolver();
   rebuildStaffRowByName();
@@ -1036,10 +1168,11 @@ function loadFromRawRows(sourceName) {
     applyPmFromTl(p);
     updateRawFromNormalized(p);
   });
+  rebuildPersonColors();
   selectedGroupId = null;
   sortKey = "opLocation";
   sortDirection = "asc";
-  selectedTlsByWorkstream = {};
+  selectedRowsByWorkflow = {};
   expandedGroupIds = new Set();
   expandedAlertIndexByGroup = {};
   originalRowGl = {};
@@ -1047,8 +1180,7 @@ function loadFromRawRows(sourceName) {
   originalPersonGl = {};
   originalPersonTl = {};
   const roleCounts = countPairs(staffRows, p => roleType(p.role));
-  const bufferCount = people.filter(p => roleType(p.role) === "buffer").length;
-  document.getElementById("uploadStatus").textContent = `Loaded ${people.length} assignable rows (${bufferCount} Buffers) and ${staffRows.length - people.length} staff/non-assignable rows from ${sourceName}. Excluded ${notAlignedCount} Operator/Buffer rows not aligned to the project.`;
+  document.getElementById("uploadStatus").textContent = `Loaded ${people.length} assignable rows and ${staffRows.length - people.length} staff/non-assignable rows from ${sourceName}. Excluded ${notAlignedCount} Operator rows not aligned to the project.`;
   render();
 }
 function handleFileUpload(event) {
@@ -1095,89 +1227,108 @@ function sortLabel(key, label) {
   if (sortKey !== key) return label + " ↕";
   return label + (sortDirection === "asc" ? " ↑" : " ↓");
 }
+// The Name header cycles: name A–Z, name Z–A, team size largest first, team size smallest first
+// The header always says what the bracketed number is; the arrow sits by whichever is sorted
+function nameSortLabel() {
+  const arrow = sortDirection === "asc" ? "↑" : "↓";
+  if (sortKey === "tl") return `Name ${arrow} (Direct Reports)`;
+  if (sortKey === "totalTlHeadcount") return `Name (Direct Reports ${arrow})`;
+  return "Name (Direct Reports) ↕";
+}
 function setSort(key) {
+  if (key === "tl") {
+    if (sortKey === "tl" && sortDirection === "asc") sortDirection = "desc";
+    else if (sortKey === "tl") { sortKey = "totalTlHeadcount"; sortDirection = "desc"; }
+    else if (sortKey === "totalTlHeadcount" && sortDirection === "desc") sortDirection = "asc";
+    else { sortKey = "tl"; sortDirection = "asc"; }
+    render();
+    return;
+  }
   if (sortKey === key) sortDirection = sortDirection === "asc" ? "desc" : "asc";
   else {
     sortKey = key;
-    sortDirection = ["rowHeadcount", "workstreamTlHeadcount", "totalTlHeadcount"].includes(key) ? "desc" : "asc";
+    sortDirection = ["rowHeadcount", "workflowTlHeadcount", "totalTlHeadcount"].includes(key) ? "desc" : "asc";
   }
   render();
 }
-function otherWorkstreamText(row) {
-  return row.otherWorkstreams.map(x => `${x.workstream}: ${x.count}`).join(" | ") || "None";
+function otherWorkflowText(row) {
+  return row.otherWorkflows.map(x => `${x.workflow}: ${x.count}`).join(" | ") || "None";
 }
 function buildRows() {
   const groupMap = new Map();
   for (const person of people) {
     const workflow = person.workflow || "Unknown Workflow";
-    const workstream = person.workstream || "Unassigned Workstream";
-    const tl = person.tl || "Unassigned TL";
+    const tl = person.tl || "Unassigned Team Lead";
     const location = getEffectiveLocation(person);
-    const role = roleType(person.role) === "buffer" ? "Buffer" : "Operator";
-    const key = [workflow, workstream, tl, location, role].join("|||");
-    if (!groupMap.has(key)) groupMap.set(key, { groupId: key, workflow, workstream, tl, location, role, people: [] });
+    const role = "Operator";
+    const key = [workflow, tl, location, role].join("|||");
+    if (!groupMap.has(key)) groupMap.set(key, { groupId: key, workflow, tl, location, role, people: [] });
     groupMap.get(key).people.push(person);
   }
   return [...groupMap.values()].map(group => {
-    const allTlRows = people.filter(p => (p.tl || "Unassigned TL") === group.tl);
-    const allTlWsRows = people.filter(p => (p.tl || "Unassigned TL") === group.tl && (p.workstream || "Unassigned Workstream") === group.workstream);
+    const allTlRows = people.filter(p => (p.tl || "Unassigned Team Lead") === group.tl);
+    const allTlWsRows = people.filter(p => (p.tl || "Unassigned Team Lead") === group.tl && (p.workflow || "Unknown Workflow") === group.workflow);
     const wsCounts = new Map();
     for (const p of allTlRows) {
-      const ws = p.workstream || "Unassigned Workstream";
+      const ws = p.workflow || "Unknown Workflow";
       wsCounts.set(ws, (wsCounts.get(ws) || 0) + 1);
     }
-    const otherWorkstreams = [...wsCounts.entries()]
-      .filter(([ws]) => ws !== group.workstream)
+    const otherWorkflows = [...wsCounts.entries()]
+      .filter(([ws]) => ws !== group.workflow)
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-      .map(([workstream, count]) => ({ workstream, count }));
+      .map(([workflow, count]) => ({ workflow, count }));
     // The row's own L1/GL is the TL's own raw L1 — a single fact about the TL (editing it via
     // the row dropdown updates the TL's real record directly, so this is always in sync).
     const tlEmpId = group.people[0]?.tlEmpId || "";
-    const primaryGl = getTlOwnGl(group.tl, tlEmpId);
+    let primaryGl = getTlOwnGl(group.tl, tlEmpId);
+    // No Team Lead record to read a Group Lead from: fall back to what this row's people list
+    if (primaryGl === "Unassigned Group Lead" && !findOwnRow(group.tl, tlEmpId)) {
+      primaryGl = countPairs(group.people, p => p.glName || "Unassigned Group Lead")[0]?.[0] || primaryGl;
+    }
     const glEmpId = group.people[0]?.glEmpId || "";
     const tlLocation = getTlLocation(group.tl);
     // PM likewise is the TL's own raw L2.
-    const pm = group.people[0]?.pmName || "No PM";
+    const pm = group.people[0]?.pmName || "No Project Lead";
     const pmEmpId = group.people[0]?.pmEmpId || "";
     const glMismatchPeople = group.people.filter(p => personGlMismatch(p));
     const tlIssue = tlStructureMismatch(group.tl, tlEmpId);
     const pmIssue = pmStructureMismatch(pm, pmEmpId);
     // Check the person's own row directly (not via findOwnRow) — some people have duplicate
-    // rows across workstreams with differing alignment, and we want *this* row's own status,
+    // rows across workflows with differing alignment, and we want *this* row's own status,
     // not whichever duplicate happened to win the emp-ID lookup.
     const operatorAlignmentIssues = group.people
       .filter(p => !isAlignedRow(p))
       .map(p => `Operator "${p.name}" is marked "${p.aligned || "Not a part of the Project"}"`);
-    const tlAlignmentIssue = alignmentIssue("TL", group.tl, tlEmpId);
-    const glAlignmentIssue = alignmentIssue("GL", primaryGl, glEmpId);
-    const pmAlignmentIssue = alignmentIssue("PM", pm, pmEmpId);
+    const tlAlignmentIssue = alignmentIssue("Team Lead", group.tl, tlEmpId);
+    const glAlignmentIssue = alignmentIssue("Group Lead", primaryGl, glEmpId);
+    const pmAlignmentIssue = alignmentIssue("Project Lead", pm, pmEmpId);
     const tlEmpIdProblem = tlEmpIdIssue(group.tl, tlEmpId);
     const tlCenters = uniqueSorted(allTlRows.map(p => getEffectiveLocation(p)));
     const multiCenterTl = tlCenters.length > 1 ? tlCenters : null;
     const notes = [];
     const tlKey = tlEmpId || group.tl;
     if (tlKey in originalRowGl && originalRowGl[tlKey] !== primaryGl) {
-      notes.push(`L1: ${originalRowGl[tlKey]} → ${primaryGl}`);
+      notes.push(`Group Lead: ${originalRowGl[tlKey]} → ${primaryGl}`);
     }
     if (tlKey in originalRowPm && originalRowPm[tlKey] !== pm) {
-      notes.push(`L2: ${originalRowPm[tlKey]} → ${pm}`);
+      notes.push(`Project Lead: ${originalRowPm[tlKey]} → ${pm}`);
     }
     group.people.forEach(p => {
       if (p.idx in originalPersonGl && originalPersonGl[p.idx] !== p.glName) {
-        notes.push(`${p.name} L2: ${originalPersonGl[p.idx]} → ${p.glName}`);
+        notes.push(`${p.name} Group Lead: ${originalPersonGl[p.idx]} → ${p.glName}`);
       }
       if (p.idx in originalPersonTl && originalPersonTl[p.idx] !== p.tl) {
-        notes.push(`${p.name} L1: ${originalPersonTl[p.idx]} → ${p.tl}`);
+        notes.push(`${p.name} Team Lead: ${originalPersonTl[p.idx]} → ${p.tl}`);
       }
     });
     return {
       ...group,
       tlEmpId,
       rowHeadcount: group.people.length,
-      workstreamTlHeadcount: allTlWsRows.length,
+      workflowTlHeadcount: allTlWsRows.length,
       totalTlHeadcount: allTlRows.length,
       tlLocation: tlLocation.effectiveLocation || "Unknown",
-      otherWorkstreams,
+      otherWorkflows,
       primaryGl,
       isMixedGl: false,
       pm,
@@ -1206,30 +1357,30 @@ function sortRows(rows) {
     else if (sortKey === "gl") { av = a.primaryGl; bv = b.primaryGl; }
     else if (sortKey === "pm") { av = a.pm; bv = b.pm; }
     else if (sortKey === "rowHeadcount") { av = a.rowHeadcount; bv = b.rowHeadcount; }
-    else if (sortKey === "workstreamTlHeadcount") { av = a.workstreamTlHeadcount; bv = b.workstreamTlHeadcount; }
+    else if (sortKey === "workflowTlHeadcount") { av = a.workflowTlHeadcount; bv = b.workflowTlHeadcount; }
     else if (sortKey === "totalTlHeadcount") { av = a.totalTlHeadcount; bv = b.totalTlHeadcount; }
     else { av = a.tl; bv = b.tl; }
     if (typeof av === "number" && typeof bv === "number") {
       return (av - bv) * direction
-        || (b.workstreamTlHeadcount - a.workstreamTlHeadcount)
+        || (b.workflowTlHeadcount - a.workflowTlHeadcount)
         || a.location.localeCompare(b.location)
         || a.tl.localeCompare(b.tl);
     }
     return String(av).localeCompare(String(bv)) * direction
       || b.rowHeadcount - a.rowHeadcount
-      || b.workstreamTlHeadcount - a.workstreamTlHeadcount
+      || b.workflowTlHeadcount - a.workflowTlHeadcount
       || a.location.localeCompare(b.location)
       || a.tl.localeCompare(b.tl);
   });
 }
-function rebuildWorkstreamPmInfo() {
-  workstreamPmInfo = {};
-  const wsNames = uniqueSorted(people.map(p => p.workstream || "Unassigned Workstream"));
-  wsNames.forEach(workstream => {
-    const wsPeople = people.filter(p => (p.workstream || "Unassigned Workstream") === workstream);
-    const pmCounts = countPairs(wsPeople, p => p.pmName || "No PM");
-    const glCounts = countPairs(wsPeople, p => p.glName || "No GL");
-    workstreamPmInfo[workstream] = {
+function rebuildWorkflowPmInfo() {
+  workflowPmInfo = {};
+  const wsNames = uniqueSorted(people.map(p => p.workflow || "Unknown Workflow"));
+  wsNames.forEach(workflow => {
+    const wsPeople = people.filter(p => (p.workflow || "Unknown Workflow") === workflow);
+    const pmCounts = countPairs(wsPeople, p => p.pmName || "No Project Lead");
+    const glCounts = countPairs(wsPeople, p => p.glName || "No Group Lead");
+    workflowPmInfo[workflow] = {
       pmCounts,
       glCounts,
       isMultiPm: pmCounts.length > 1,
@@ -1238,41 +1389,61 @@ function rebuildWorkstreamPmInfo() {
   });
   // Table header color by split type: GL-only = orange, PM-only = yellow, both = red.
   wsNames.forEach(ws => {
-    const info = workstreamPmInfo[ws];
+    const info = workflowPmInfo[ws];
     if (info.isMultiGl && info.isMultiPm) info.highlightColor = SPLIT_COLOR_BOTH;
     else if (info.isMultiGl) info.highlightColor = SPLIT_COLOR_GL;
     else if (info.isMultiPm) info.highlightColor = SPLIT_COLOR_PM;
   });
-  // PM/GL summary cards keep each split workstream's original distinct color instead.
-  const splitWorkstreams = wsNames
-    .filter(ws => workstreamPmInfo[ws].isMultiPm || workstreamPmInfo[ws].isMultiGl)
+  // PM/GL summary cards keep each split workflow's original distinct color instead.
+  const splitWorkflows = wsNames
+    .filter(ws => workflowPmInfo[ws].isMultiPm || workflowPmInfo[ws].isMultiGl)
     .sort((a, b) => a.localeCompare(b));
-  splitWorkstreams.forEach((ws, idx) => {
-    workstreamPmInfo[ws].legacyColor = MULTI_PM_PALETTE[idx % MULTI_PM_PALETTE.length];
+  splitWorkflows.forEach((ws, idx) => {
+    workflowPmInfo[ws].legacyColor = MULTI_PM_PALETTE[idx % MULTI_PM_PALETTE.length];
   });
+}
+// Lead Structure Issue: someone in this workflow has a Project Lead who is really a Group Lead,
+// or a Group Lead who is really a Project Lead (by the role on that lead's own roster row)
+const LEAD_ISSUE_COLOR = { border: "#2563eb", bg: "#eff6ff" };
+function hasLeadStructureIssue(workflow) {
+  const roleOf = (name, empId) => {
+    const own = name ? findOwnRow(name, empId) : null;
+    return own ? roleType(own.role) : "";
+  };
+  return people.some(p => (p.workflow || "Unknown Workflow") === workflow &&
+    ((p.pmName && roleOf(p.pmName, p.pmEmpId) === "gl") || (p.glName && roleOf(p.glName, p.glEmpId) === "pm")));
 }
 function computeMultiPmGlNames() {
   const glPms = {};
   people.forEach(p => {
-    const gl = p.glName || "No GL";
+    const gl = p.glName || "No Group Lead";
     if (!glPms[gl]) glPms[gl] = new Set();
-    glPms[gl].add(p.pmName || "No PM");
+    glPms[gl].add(p.pmName || "No Project Lead");
   });
   const multi = new Set();
   Object.entries(glPms).forEach(([gl, pms]) => { if (pms.size > 1) multi.add(gl); });
   return multi;
 }
-function renderGlTagsForPm(glCounts, multiPmGls) {
+function renderGlTagsForPm(glCounts, multiPmGls, pmName) {
   if (!glCounts.length) return '<span class="empty">None</span>';
   return glCounts.map(([gl, count]) => {
     const style = multiPmGls.has(gl) ? glTagStyle(gl) : "";
+    // A highlighted Group Lead links to the workflows flagged "Spans Multiple Group Leads" that this
+    // Group Lead is part of, the same from every card (clicking again steps to the next one).
+    const glWorkflows = multiPmGls.has(gl) ? uniqueSorted(people.filter(p => p.glName === gl).map(p => p.workflow || "Unknown Workflow")) : [];
+    const multiGlWorkflows = glWorkflows.filter(ws => workflowPmInfo[ws]?.isMultiGl);
+    const issueWorkflows = multiGlWorkflows.length ? multiGlWorkflows : glWorkflows.filter(ws => workflowPmInfo[ws]?.isMultiPm);
+    if (issueWorkflows.length) {
+      const where = issueWorkflows.join(", ");
+      return `<button type="button" class="tag wf-jump" data-workflows="${escapeHtml(issueWorkflows.join("|"))}" title="Jump to ${escapeHtml(where)}"${style}>${escapeHtml(gl)}: <b>${count}</b></button>`;
+    }
     return `<span class="tag"${style}>${escapeHtml(gl)}: <b>${count}</b></span>`;
   }).join("");
 }
-function renderWorkstreamTags(wsCounts, relevantDimension = "both") {
+function renderWorkflowTags(wsCounts, relevantDimension = "both") {
   if (!wsCounts.length) return '<span class="empty">None</span>';
   return wsCounts.map(([ws, count]) => {
-    const info = workstreamPmInfo[ws];
+    const info = workflowPmInfo[ws];
     let shouldHighlight = false;
     if (info) {
       if (relevantDimension === "pm") shouldHighlight = info.isMultiPm;
@@ -1282,27 +1453,24 @@ function renderWorkstreamTags(wsCounts, relevantDimension = "both") {
     const style = shouldHighlight && info.legacyColor
       ? ` style="border-color:${info.legacyColor.border}; color:${info.legacyColor.border}; background:${info.legacyColor.bg};"`
       : "";
-    return `<span class="tag"${style}>${escapeHtml(ws)}: <b>${count}</b></span>`;
+    return `<button type="button" class="tag wf-jump" data-workflow="${escapeHtml(ws)}" title="Jump to ${escapeHtml(ws)}"${style}>${escapeHtml(ws)}: <b>${count}</b></button>`;
   }).join("");
 }
-function buildWorkstreamSections() {
+function buildWorkflowSections() {
   const rows = buildRows();
-  const wsNames = uniqueSorted(people.map(p => p.workstream || "Unassigned Workstream"));
-  return wsNames.map(workstream => {
-    const wsPeople = people.filter(p => (p.workstream || "Unassigned Workstream") === workstream);
-    const wsRows = rows.filter(r => r.workstream === workstream);
-    const workflow = wsPeople[0]?.workflow || "Unknown Workflow";
-    const info = workstreamPmInfo[workstream] || { pmCounts: [], glCounts: [], isMultiPm: false, isMultiGl: false };
+  const wsNames = uniqueSorted(people.map(p => p.workflow || "Unknown Workflow"));
+  return wsNames.map(workflow => {
+    const wsPeople = people.filter(p => (p.workflow || "Unknown Workflow") === workflow);
+    const wsRows = rows.filter(r => r.workflow === workflow);
+    const info = workflowPmInfo[workflow] || { pmCounts: [], glCounts: [], isMultiPm: false, isMultiGl: false };
     return {
       workflow,
-      workstream,
       totalAssignable: wsPeople.length,
       operatorCount: wsPeople.filter(p => roleType(p.role) === "operator").length,
-      bufferCount: wsPeople.filter(p => roleType(p.role) === "buffer").length,
       tlCount: uniqueSorted(wsRows.map(r => r.tl)).length,
       rows: sortRows(wsRows),
-      roleSummary: tagsFromCounts(countPairs(wsPeople, p => roleType(p.role) === "buffer" ? "Buffer" : "Operator"), "role"),
-      glSummary: tagsFromCounts(countPairs(wsPeople, p => p.glName || "No GL"), "gl"),
+      roleSummary: tagsFromCounts(countPairs(wsPeople, p => "Operator"), "role"),
+      glSummary: tagsFromCounts(countPairs(wsPeople, p => p.glName || "No Group Lead"), "gl"),
       pmSummary: tagsFromCounts(info.pmCounts, "pm"),
       pmCounts: info.pmCounts,
       glCounts: info.glCounts,
@@ -1310,7 +1478,7 @@ function buildWorkstreamSections() {
       isMultiGl: info.isMultiGl,
       highlightColor: info.highlightColor
     };
-  }).sort((a, b) => b.totalAssignable - a.totalAssignable || a.workflow.localeCompare(b.workflow) || a.workstream.localeCompare(b.workstream));
+  }).sort((a, b) => b.totalAssignable - a.totalAssignable || a.workflow.localeCompare(b.workflow));
 }
 function validateTotals(sections) {
   const rowTotal = buildRows().reduce((sum, row) => sum + row.rowHeadcount, 0);
@@ -1324,15 +1492,14 @@ function renderStats(sections) {
     return;
   }
   const validation = validateTotals(sections);
-  const assignableRoleCounts = countPairs(people, p => roleType(p.role) === "buffer" ? "Buffer" : "Operator");
+  const assignableRoleCounts = countPairs(people, p => "Operator");
   const allRoleCounts = countPairs(staffRows, p => p.role || "Unknown");
   document.getElementById("globalStats").innerHTML = `
     <span class="stat">${people.length} assignable rows</span>
     ${tagsFromCounts(assignableRoleCounts, "role")}
-    <span class="stat">${uniqueSorted(people.map(p => p.workflow || "Unknown Workflow")).length} workflows</span>
-    <span class="stat">${sections.length} workstreams</span>
-    <span class="stat">${uniqueSorted(people.map(p => p.tl || "Unassigned TL")).length} TLs</span>
-    <span class="stat">${uniqueSorted(people.map(p => p.glName || "No GL")).length} GLs</span>
+    <span class="stat">${sections.length} workflows</span>
+    <span class="stat">${uniqueSorted(people.map(p => p.tl || "Unassigned Team Lead")).length} Team Leads</span>
+    <span class="stat">${uniqueSorted(people.map(p => p.glName || "No Group Lead")).length} Group Leads</span>
     <span class="stat">${staffRows.length} total CSV rows</span>
     <span class="stat ${validation.ok ? "ok" : "bad"}">${validation.ok ? "Totals validated" : "Total mismatch detected"}</span>
   `;
@@ -1340,7 +1507,7 @@ function renderStats(sections) {
 
 
 function renderTlList(assigned) {
-  const tlCounts = countPairs(assigned, p => p.tl || "Unassigned TL");
+  const tlCounts = countPairs(assigned, p => p.tl || "Unassigned Team Lead");
   if (!tlCounts.length) return '<span class="empty">None</span>';
   return tlCounts.map(([tl, count]) => `<span class="tag">${escapeHtml(tl)}: <b>${count}</b></span>`).join("");
 }
@@ -1356,35 +1523,37 @@ function renderPmCards() {
 
   const cards = pmNames.map(pmName => {
     const assigned = people.filter(p => p.pmName === pmName);
-    const glCounts = countPairs(assigned, p => p.glName || "No GL");
-    const roleCounts = countPairs(assigned, p => roleType(p.role) === "buffer" ? "Buffer" : "Operator");
+    const glCounts = countPairs(assigned, p => p.glName || "No Group Lead");
+    const roleCounts = countPairs(assigned, p => "Operator");
     const roleTags = tagsFromCounts(roleCounts, "role-plain") || '<span class="tag role-plain">0</span>';
-    const wfCounts = countPairs(assigned, p => p.workflow || "Unknown Workflow");
-    const wsCounts = countPairs(assigned, p => p.workstream || "Unassigned Workstream");
-    const tlCount = uniqueSorted(assigned.map(p => p.tl || "Unassigned TL")).length;
-    const glCount = uniqueSorted(assigned.map(p => p.glName || "No GL")).length;
+    const wsCounts = countPairs(assigned, p => p.workflow || "Unknown Workflow");
+    const tlCount = uniqueSorted(assigned.map(p => p.tl || "Unassigned Team Lead")).length;
+    const glCount = uniqueSorted(assigned.map(p => p.glName || "No Group Lead")).length;
     const pmIssue = pmStructureMismatch(pmName, assigned[0]?.pmEmpId);
-    const pmIssueBadge = pmIssue ? alertTag(`Not actually PM: ${pmIssue}`, ALERT_COLOR_STRUCTURE) : "";
+    const pmWorkflows = uniqueSorted(assigned.map(p => p.workflow || "Unknown Workflow"));
+    const pmIssueBadge = (pmIssue ? issueJumpTag(`Not a Project Lead: ${pmIssue}`, pmWorkflows) : "")
+      + notAlignedBadge(pmName, assigned[0]?.pmEmpId, pmWorkflows);
 
     return `
-      <div class="gl-card">
-        <div class="gl-card-name">${escapeHtml(pmName)}</div>
+      <div class="gl-card person-card" style="border-top-color:${personDotColor(pmName)}">
+        <button type="button" class="lead-edit-btn" data-lead-name="${escapeHtml(pmName)}" data-lead-emp-id="${escapeHtml(assigned[0]?.pmEmpId || "")}">Edit</button>
+        <div class="gl-card-name lead-name">${escapeHtml(pmName)}</div>
         <div class="gl-card-hc">${assigned.length}</div>
-        <div class="gl-card-sub">assigned rows · ${glCount} GLs · ${tlCount} TLs · ${wfCounts.length} workflows · ${wsCounts.length} workstreams</div>
+        <div class="gl-card-sub">assigned rows · ${glCount} Group Leads · ${tlCount} Team Leads · ${wsCounts.length} workflows</div>
         ${pmIssueBadge ? `<div>${pmIssueBadge}</div>` : ""}
         <div>${roleTags}</div>
         <div class="gl-card-section-label">Group Leads</div>
-        <div>${renderGlTagsForPm(glCounts, multiPmGls)}</div>
+        <div>${renderGlTagsForPm(glCounts, multiPmGls, pmName)}</div>
         <details class="tl-details">
-          <summary>TLs (${tlCount})</summary>
+          <summary>Team Leads (${tlCount})</summary>
           <div>${renderTlList(assigned)}</div>
         </details>
-        <div class="gl-card-section-label">Workstreams</div>
-        <div>${renderWorkstreamTags(wsCounts, "pm")}</div>
+        <div class="gl-card-section-label">Workflows</div>
+        <div>${renderWorkflowTags(wsCounts, "pm")}</div>
       </div>`;
   }).join("");
 
-  document.getElementById("pmCards").innerHTML = cards || `<div class="empty">No PM/L2 assignments found in the uploaded CSV.</div>`;
+  document.getElementById("pmCards").innerHTML = cards || `<div class="empty">No Project Lead assignments found in the uploaded CSV.</div>`;
 }
 
 
@@ -1395,25 +1564,28 @@ function renderGlCards() {
   }
   const cards = GL_CANDIDATES.map(gl => {
     const assigned = people.filter(p => p.glName === gl.name);
-    const roleCounts = countPairs(assigned, p => roleType(p.role) === "buffer" ? "Buffer" : "Operator");
+    const roleCounts = countPairs(assigned, p => "Operator");
     const roleTags = tagsFromCounts(roleCounts, "role-plain") || '<span class="tag role-plain">0</span>';
-    const wsCounts = countPairs(assigned, p => p.workstream || "Unassigned Workstream");
-    const tlCount = uniqueSorted(assigned.map(p => p.tl || "Unassigned TL")).length;
+    const wsCounts = countPairs(assigned, p => p.workflow || "Unknown Workflow");
+    const tlCount = uniqueSorted(assigned.map(p => p.tl || "Unassigned Team Lead")).length;
     const glIssue = glStructureMismatch(gl.name, gl.empId);
-    const glIssueBadge = glIssue ? alertTag(`Not actually GL: ${glIssue}`, ALERT_COLOR_STRUCTURE) : "";
+    const glWorkflows = uniqueSorted(assigned.map(p => p.workflow || "Unknown Workflow"));
+    const glIssueBadge = (glIssue ? issueJumpTag(`Not a Group Lead: ${glIssue}`, glWorkflows) : "")
+      + notAlignedBadge(gl.name, gl.empId, glWorkflows);
     return `
-      <div class="gl-card">
-        <div class="gl-card-name">${escapeHtml(gl.name)}</div>
+      <div class="gl-card person-card" style="border-top-color:${personDotColor(gl.name)}">
+        <button type="button" class="lead-edit-btn" data-lead-name="${escapeHtml(gl.name)}" data-lead-emp-id="${escapeHtml(gl.empId || "")}">Edit</button>
+        <div class="gl-card-name lead-name">${escapeHtml(gl.name)}</div>
         <div class="gl-card-hc">${assigned.length}</div>
-        <div class="gl-card-sub">assigned rows · ${tlCount} TLs · ${wsCounts.length} workstreams</div>
+        <div class="gl-card-sub">assigned rows · ${tlCount} Team Leads · ${wsCounts.length} workflows</div>
         ${glIssueBadge ? `<div>${glIssueBadge}</div>` : ""}
         <div>${roleTags}</div>
         <details class="tl-details">
-          <summary>TLs (${tlCount})</summary>
+          <summary>Team Leads (${tlCount})</summary>
           <div>${renderTlList(assigned)}</div>
         </details>
-        <div class="gl-card-section-label">Workstreams</div>
-        <div>${renderWorkstreamTags(wsCounts, "gl")}</div>
+        <div class="gl-card-section-label">Workflows</div>
+        <div>${renderWorkflowTags(wsCounts, "gl")}</div>
       </div>`;
   }).join("");
   document.getElementById("glCards").innerHTML = cards;
@@ -1424,9 +1596,7 @@ function renderStatCards() {
     return;
   }
   const operators = people.filter(p => roleType(p.role) === "operator");
-  const opBufferPeople = people.filter(p => roleType(p.role) === "operator" || roleType(p.role) === "buffer");
-  const wfhCount = opBufferPeople.filter(p => String(getEffectiveLocation(p) || "").toUpperCase() === "WFH").length;
-  const colocationPeople = opBufferPeople.filter(p => String(getEffectiveLocation(p) || "").toUpperCase() !== "WFH");
+  const colocationPeople = operators;
   const total = colocationPeople.length;
 
   let colocated = 0, notColocated = 0, unknown = 0;
@@ -1441,7 +1611,7 @@ function renderStatCards() {
 
   const byTl = {};
   operators.forEach(p => {
-    const tl = p.tl || "Unassigned TL";
+    const tl = p.tl || "Unassigned Team Lead";
     if (!byTl[tl]) byTl[tl] = new Map();
     const loc = getEffectiveLocation(p) || "Unknown";
     byTl[tl].set(loc, (byTl[tl].get(loc) || 0) + 1);
@@ -1453,7 +1623,7 @@ function renderStatCards() {
 
   const tlTeamSizes = {};
   people.forEach(p => {
-    const tl = p.tl || "Unassigned TL";
+    const tl = p.tl || "Unassigned Team Lead";
     tlTeamSizes[tl] = (tlTeamSizes[tl] || 0) + 1;
   });
   const sizes = Object.values(tlTeamSizes).sort((a, b) => a - b);
@@ -1476,25 +1646,25 @@ function renderStatCards() {
     .filter(([, size]) => size > 30)
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 
-  const tlWorkstreams = {};
+  const tlWorkflows = {};
   people.forEach(p => {
-    const tl = p.tl || "Unassigned TL";
-    if (!tlWorkstreams[tl]) tlWorkstreams[tl] = new Set();
-    tlWorkstreams[tl].add(p.workstream || "Unassigned Workstream");
+    const tl = p.tl || "Unassigned Team Lead";
+    if (!tlWorkflows[tl]) tlWorkflows[tl] = new Set();
+    tlWorkflows[tl].add(p.workflow || "Unknown Workflow");
   });
-  const multiWsTls = Object.entries(tlWorkstreams)
+  const multiWsTls = Object.entries(tlWorkflows)
     .filter(([, wsSet]) => wsSet.size > 1)
     .sort((a, b) => b[1].size - a[1].size || a[0].localeCompare(b[0]));
 
   const multiCenterPct = tlEntries.length ? Math.round((multiCenterTls.length / tlEntries.length) * 100) : 0;
-  const tlWorkstreamCount = Object.keys(tlWorkstreams).length;
-  const multiWsPct = tlWorkstreamCount ? Math.round((multiWsTls.length / tlWorkstreamCount) * 100) : 0;
+  const tlWorkflowCount = Object.keys(tlWorkflows).length;
+  const multiWsPct = tlWorkflowCount ? Math.round((multiWsTls.length / tlWorkflowCount) * 100) : 0;
 
   document.getElementById("statCards").innerHTML = `
     <div class="gl-card" style="border: 2px solid #111827;">
-      <div class="gl-card-name">TL team size</div>
+      <div class="gl-card-name">Team Size</div>
       <div class="gl-card-hc">${sizeMedian} <span style="font-size:13px; color:#6b7280; font-weight:normal;">median</span></div>
-      <div class="gl-card-sub">range ${sizeMin}&ndash;${sizeMax} &middot; across ${sizes.length} TLs &middot; Operators + Buffers</div>
+      <div class="gl-card-sub">range ${sizeMin}&ndash;${sizeMax} &middot; across ${sizes.length} Team Leads &middot; Operators</div>
       <details class="tl-details">
         <summary>Teams &lt; 10 (${smallTls.length})</summary>
         <div>${smallTls.map(([tl, size]) => `<span class="tag">${escapeHtml(tl)}: <b>${size}</b></span>`).join("") || '<span class="empty">None</span>'}</div>
@@ -1505,9 +1675,9 @@ function renderStatCards() {
       </details>
     </div>
     <div class="gl-card">
-      <div class="gl-card-name">Co-located with TL</div>
+      <div class="gl-card-name">Co-Located with Team Lead</div>
       <div class="gl-card-hc">${colocated} <span style="font-size:13px; color:#6b7280; font-weight:normal;">/ ${total} (${colocatedPct}%)</span></div>
-      <div class="gl-card-sub">Operators + Buffers who are WFO (WFH excluded)</div>
+      <div class="gl-card-sub">Operators in the same location as their Team Lead</div>
       <div>
         <span class="tag" style="border-color:#86efac; color:#166534; background:#f0fdf4;">Co-located: <b>${colocated}</b></span>
         <span class="tag" style="border-color:#fdba74; color:#9a3412; background:#fff7ed;">Not co-located: <b>${notColocated}</b></span>
@@ -1515,29 +1685,39 @@ function renderStatCards() {
       </div>
     </div>
     <div class="gl-card">
-      <div class="gl-card-name">WFH</div>
-      <div class="gl-card-hc">${wfhCount}</div>
-      <div class="gl-card-sub">Operators + Buffers working from home</div>
-    </div>
-    <div class="gl-card">
-      <div class="gl-card-name">TLs spanning multiple centers</div>
+      <div class="gl-card-name">Team Leads Spanning Multiple Centers</div>
       <div class="gl-card-hc">${multiCenterTls.length} <span style="font-size:13px; color:#6b7280; font-weight:normal;">/ ${tlEntries.length} (${multiCenterPct}%)</span></div>
-      <div class="gl-card-sub">of TLs with Operators &middot; center = OP effective location</div>
+      <div class="gl-card-sub">of Team Leads with Operators &middot; center = Operator location</div>
       <details class="tl-details">
-        <summary>TLs (${multiCenterTls.length})</summary>
+        <summary>Team Leads (${multiCenterTls.length})</summary>
         <div>${multiCenterTls.map(([tl, locs]) => `<span class="tag">${escapeHtml(tl)}: <b>${locs.size}</b></span>`).join("") || '<span class="empty">None</span>'}</div>
       </details>
     </div>
     <div class="gl-card">
-      <div class="gl-card-name">TLs spanning multiple workstreams</div>
-      <div class="gl-card-hc">${multiWsTls.length} <span style="font-size:13px; color:#6b7280; font-weight:normal;">/ ${tlWorkstreamCount} (${multiWsPct}%)</span></div>
-      <div class="gl-card-sub">Operators + Buffers</div>
+      <div class="gl-card-name">Team Leads Spanning Multiple Workflows</div>
+      <div class="gl-card-hc">${multiWsTls.length} <span style="font-size:13px; color:#6b7280; font-weight:normal;">/ ${tlWorkflowCount} (${multiWsPct}%)</span></div>
+      <div class="gl-card-sub">Operators</div>
       <details class="tl-details">
-        <summary>TLs (${multiWsTls.length})</summary>
+        <summary>Team Leads (${multiWsTls.length})</summary>
         <div>${multiWsTls.map(([tl, wsSet]) => `<span class="tag">${escapeHtml(tl)}: <b>${wsSet.size}</b></span>`).join("") || '<span class="empty">None</span>'}</div>
       </details>
     </div>
   `;
+}
+// A red alert on a summary card that jumps to the workflow tables involved (clicking again steps to the next)
+function issueJumpTag(text, workflows) {
+  const color = ALERT_COLOR_MISMATCH;
+  const style = ` style="border-color:${color.border}; color:${color.text}; background:${color.bg};"`;
+  if (!workflows.length) return `<span class="tag"${style}>${escapeHtml(text)}</span>`;
+  return `<button type="button" class="tag wf-jump" data-workflows="${escapeHtml(workflows.join("|"))}" title="Jump to ${escapeHtml(workflows.join(", "))}"${style}>${escapeHtml(text)}</button>`;
+}
+// Red alert on a lead's summary card when their own roster row isn't aligned to the project
+function notAlignedBadge(name, empId, workflows) {
+  const own = name ? findOwnRow(name, empId) : null;
+  if (!own || isAlignedRow(own)) return "";
+  const status = own.aligned || "Not a part of the Project";
+  const text = /^not aligned$/i.test(status) ? "Not Aligned to the Project" : `Not Aligned: Listed as '${status}'`;
+  return issueJumpTag(text, workflows);
 }
 function alertTag(text, color, title, index) {
   const idxAttr = index !== undefined ? ` data-alert-index="${index}"` : "";
@@ -1546,45 +1726,45 @@ function alertTag(text, color, title, index) {
 const ALERT_COLOR_STRUCTURE = { border: "#8b5cf6", text: "#5b21b6", bg: "#f5f3ff" };   // TL/PM chain broken
 const ALERT_COLOR_EMPID = { border: "#e11d48", text: "#9f1239", bg: "#fff1f2" };       // Emp ID reference issue
 const ALERT_COLOR_ALIGN = { border: "#f59e0b", text: "#92400e", bg: "#fffbeb" };       // alignment status mismatch
-const ALERT_COLOR_INFO = { border: "#3b82f6", text: "#1e40af", bg: "#eff6ff" };        // informational (other workstreams)
+const ALERT_COLOR_INFO = { border: "#3b82f6", text: "#1e40af", bg: "#eff6ff" };        // informational (other workflows)
 const ALERT_COLOR_CENTER = { border: "#14b8a6", text: "#115e59", bg: "#f0fdfa" };      // multi-center
 const ALERT_COLOR_MISMATCH = { border: "#ef4444", text: "#991b1b", bg: "#fef2f2" };    // GL data disagreement
 const ALERT_COLOR_NOTE = { border: "#94a3b8", text: "#334155", bg: "#f8fafc" };        // change log
 function getRowAlerts(row) {
   const alerts = [];
   if (row.tlIssue) {
-    alerts.push({ text: "TL structure", color: ALERT_COLOR_STRUCTURE, detail: `TL "${row.tl}": ${row.tlIssue}` });
+    alerts.push({ text: "Team Lead Structure", color: ALERT_COLOR_STRUCTURE, detail: `Team Lead "${row.tl}": ${row.tlIssue}` });
   }
   if (row.tlEmpIdProblem) {
-    alerts.push({ text: "Emp ID issue", color: ALERT_COLOR_EMPID, detail: row.tlEmpIdProblem });
+    alerts.push({ text: "Emp ID Issue", color: ALERT_COLOR_EMPID, detail: row.tlEmpIdProblem });
   }
   if (row.operatorAlignmentIssues.length) {
-    alerts.push({ text: `Operator not aligned (${row.operatorAlignmentIssues.length})`, color: ALERT_COLOR_ALIGN, detail: row.operatorAlignmentIssues.join("\n") });
+    alerts.push({ text: `Operator Not Aligned (${row.operatorAlignmentIssues.length})`, color: ALERT_COLOR_ALIGN, detail: row.operatorAlignmentIssues.join("\n") });
   }
   if (row.tlAlignmentIssue) {
-    alerts.push({ text: "TL not aligned", color: ALERT_COLOR_ALIGN, detail: row.tlAlignmentIssue });
+    alerts.push({ text: "Team Lead Not Aligned", color: ALERT_COLOR_ALIGN, detail: row.tlAlignmentIssue });
   }
   if (row.glAlignmentIssue) {
-    alerts.push({ text: "GL not aligned", color: ALERT_COLOR_ALIGN, detail: row.glAlignmentIssue });
+    alerts.push({ text: "Group Lead Not Aligned", color: ALERT_COLOR_ALIGN, detail: row.glAlignmentIssue });
   }
   if (row.pmAlignmentIssue) {
-    alerts.push({ text: "PM not aligned", color: ALERT_COLOR_ALIGN, detail: row.pmAlignmentIssue });
+    alerts.push({ text: "Project Lead Not Aligned", color: ALERT_COLOR_ALIGN, detail: row.pmAlignmentIssue });
   }
-  row.otherWorkstreams.forEach(w => {
-    alerts.push({ text: `${w.workstream}: ${w.count}`, color: ALERT_COLOR_INFO, detail: `TL also works on "${w.workstream}" (${w.count} people)` });
+  row.otherWorkflows.forEach(w => {
+    alerts.push({ text: `Multiple Workflows: ${w.workflow} (${w.count})`, color: ALERT_COLOR_INFO, jump: w.workflow, detail: `Team Lead also works on "${w.workflow}" (${w.count} people)` });
   });
   if (row.pmIssue) {
-    alerts.push({ text: "PM structure", color: ALERT_COLOR_STRUCTURE, detail: `PM "${row.pm}": ${row.pmIssue}` });
+    alerts.push({ text: "Project Lead Structure", color: ALERT_COLOR_STRUCTURE, detail: `Project Lead "${row.pm}": ${row.pmIssue}` });
   }
   if (row.multiCenterTl) {
-    alerts.push({ text: "Multi Center", color: ALERT_COLOR_CENTER, detail: `TL's people are spread across: ${row.multiCenterTl.join(", ")}` });
+    alerts.push({ text: "Multi Center", color: ALERT_COLOR_CENTER, detail: `Team Lead's people are spread across: ${row.multiCenterTl.join(", ")}` });
   }
   if (row.glMismatchPeople.length) {
-    const detail = row.glMismatchPeople.map(p => `${p.name}: Operator's GL ${personGlMismatch(p)}, TL's GL ${row.primaryGl}`).join("\n");
-    alerts.push({ text: `GL mismatch (${row.glMismatchPeople.length})`, color: ALERT_COLOR_MISMATCH, detail });
+    const detail = row.glMismatchPeople.map(p => `${p.name}: Operator's Group Lead ${personGlMismatch(p)}, Team Lead's Group Lead ${row.primaryGl}`).join("\n");
+    alerts.push({ text: `Group Lead Mismatch (${row.glMismatchPeople.length})`, color: ALERT_COLOR_MISMATCH, detail });
   }
   if (row.notes.length) {
-    alerts.push({ text: `${row.notes.length} change${row.notes.length > 1 ? "s" : ""}`, color: ALERT_COLOR_NOTE, detail: row.notes.join("\n") });
+    alerts.push({ text: `${row.notes.length} Change${row.notes.length > 1 ? "s" : ""}`, color: ALERT_COLOR_NOTE, detail: row.notes.join("\n") });
   }
   return alerts;
 }
@@ -1593,6 +1773,10 @@ function renderAlertsCell(row) {
   if (!alerts.length) return '<span class="empty">None</span>';
   const expandedIdx = expandedAlertIndexByGroup[row.groupId];
   return alerts.map((a, i) => {
+    // "Also works on another workflow" tags jump to that workflow instead of opening details
+    if (a.jump) {
+      return `<button type="button" class="tag wf-jump" data-workflow="${escapeHtml(a.jump)}" title="Jump to ${escapeHtml(a.jump)}" style="border-color:${a.color.border}; color:${a.color.text}; background:${a.color.bg};">↗ ${escapeHtml(a.text)}</button>`;
+    }
     const caret = expandedIdx === i ? "▾" : "▸";
     return alertTag(`${caret} ${a.text}`, a.color, a.detail, i);
   }).join("");
@@ -1606,13 +1790,13 @@ function renderAlertDetailsRow(row) {
   if (!alert) return "";
   return `
     <tr class="alert-details-row" data-group-id="${escapeHtml(row.groupId)}">
-      <td colspan="6"></td>
+      <td colspan="8"></td>
       <td class="alert-detail-cell" style="border-left: 4px solid ${alert.color.border};">${escapeHtml(alert.detail)}</td>
-      <td colspan="3"></td>
+      <td></td>
     </tr>`;
 }
-function isTlSelected(workstream, tl) {
-  return (selectedTlsByWorkstream[workstream] || []).includes(tl);
+function isRowSelected(workflow, groupId) {
+  return (selectedRowsByWorkflow[workflow] || []).includes(groupId);
 }
 function applyPersonGl(personIdx, glName) {
   const person = people.find(p => p.idx === Number(personIdx));
@@ -1638,32 +1822,57 @@ function toggleAlertDetails(groupId, index) {
   else expandedAlertIndexByGroup[groupId] = idx;
   render();
 }
+// Team Lead dropdown on a Team Lead row: blank, since they are the Team Lead; picking someone moves the whole row to them
+function renderRowTlDropdown(row) {
+  const options = TL_CANDIDATES
+    .filter(tl => tl.name !== row.tl)
+    .map(tl => `<option value="${escapeHtml(tl.name)}">${escapeHtml(tl.name)}${tl.aligned === false ? " (Not Aligned)" : ""}</option>`)
+    .join("");
+  return `<select class="row-tl-select" title="Move this whole team to another Team Lead" data-group-id="${escapeHtml(row.groupId)}"><option value="" selected></option>${options}</select>`;
+}
+function applyRowTl(groupId, tlName) {
+  const row = buildRows().find(r => r.groupId === groupId);
+  if (!row || !tlName || tlName === row.tl) return;
+  pushUndoSnapshot();
+  const tlInfo = getTlLocation(tlName);
+  row.people.forEach(person => {
+    captureOriginal(originalPersonTl, person.idx, person.tl);
+    person.tl = tlName;
+    person.tlEmail = tlInfo.email || "";
+    person.tlEmpId = tlInfo.empId || "";
+    applyGlFromTl(person);
+    person.glManuallySet = true;
+    applyPmFromTl(person);
+    updateRawFromNormalized(person);
+  });
+  render();
+}
 function renderGlDropdown(row) {
   return `<select class="row-gl-select" style="${stripeDropdownStyle(row.primaryGl)}" data-group-id="${escapeHtml(row.groupId)}">${glOptions(row.primaryGl)}</select>`;
 }
 function renderPersonGlDropdown(person) {
-  return `<select class="person-gl-select" style="${stripeDropdownStyle(person.glName)}" data-person-idx="${escapeHtml(person.idx)}">${glOptions(person.glName || "Unassigned GL")}</select>`;
+  return `<select class="person-gl-select" style="${stripeDropdownStyle(person.glName)}" data-person-idx="${escapeHtml(person.idx)}">${glOptions(person.glName || "Unassigned Group Lead")}</select>`;
 }
 function renderPersonTlDropdown(person) {
-  return `<select class="person-tl-select" data-person-idx="${escapeHtml(person.idx)}">${tlOptions(person.tl || "Unassigned TL")}</select>`;
+  return `<select class="person-tl-select" data-person-idx="${escapeHtml(person.idx)}">${tlOptions(person.tl || "Unassigned Team Lead")}</select>`;
 }
 function renderPersonSubRow(person) {
   const mismatch = personGlMismatch(person);
   const alertCell = mismatch
-    ? alertTag(`Operator's GL ${mismatch}, TL's GL ${getTlOwnGl(person.tl, person.tlEmpId)}`, ALERT_COLOR_MISMATCH)
+    ? alertTag(`Operator's Group Lead ${mismatch}, Team Lead's Group Lead ${getTlOwnGl(person.tl, person.tlEmpId)}`, ALERT_COLOR_MISMATCH)
     : "";
   return `
     <tr class="person-subrow" data-person-idx="${escapeHtml(person.idx)}">
       <td class="select-cell"></td>
-      <td></td>
       <td class="person-name">${escapeHtml(person.name)}</td>
-      <td class="count">&mdash;</td>
-      <td>&mdash;</td>
+      <td></td>
       <td style="text-align: center;"><span class="tag ${locationClass(getEffectiveLocation(person))}">${escapeHtml(getEffectiveLocation(person))}</span></td>
-      <td>${alertCell}</td>
+      <td></td>
       <td>${renderPersonTlDropdown(person)}</td>
       <td>${renderPersonGlDropdown(person)}</td>
-      <td class="action-cell"></td>
+      <td><span class="lead-readonly" style="${stripeDropdownStyle(person.pmName || "No Project Lead")}" title="Follows their Team Lead">${escapeHtml(person.pmName || "No Project Lead")}</span></td>
+      <td>${alertCell}</td>
+      <td><button type="button" class="row-edit-btn lead-edit-btn" data-lead-name="${escapeHtml(person.name)}" data-lead-emp-id="${escapeHtml(person.empId || "")}" title="Edit ${escapeHtml(person.name)}'s alignment or Employee ID">Edit</button></td>
     </tr>`;
 }
 function renderRow(row) {
@@ -1672,19 +1881,17 @@ function renderRow(row) {
   const alertsExpanded = row.groupId in expandedAlertIndexByGroup;
   const alertDetailsRow = alertsExpanded ? renderAlertDetailsRow(row) : "";
   return `
-    <tr class="draggable-row" draggable="true" data-group-id="${escapeHtml(row.groupId)}" data-workstream="${escapeHtml(row.workstream)}" data-tl="${escapeHtml(row.tl)}">
-      <td class="select-cell"><input type="checkbox" class="tl-select" data-workstream="${escapeHtml(row.workstream)}" data-tl="${escapeHtml(row.tl)}" ${isTlSelected(row.workstream, row.tl) ? "checked" : ""}></td>
-      <td><span class="tag ${roleClass(row.role)} toggle-people-btn" data-group-id="${escapeHtml(row.groupId)}">${expanded ? "▾" : "▸"} ${escapeHtml(row.role)}</span></td>
-      <td><span class="tl-name">${escapeHtml(row.tl)}</span></td>
-      <td class="count">${row.totalTlHeadcount}</td>
+    <tr class="draggable-row" draggable="true" data-group-id="${escapeHtml(row.groupId)}" data-workflow="${escapeHtml(row.workflow)}" data-tl="${escapeHtml(row.tl)}">
+      <td class="select-cell"><input type="checkbox" class="tl-select" data-workflow="${escapeHtml(row.workflow)}" data-group-id="${escapeHtml(row.groupId)}" ${isRowSelected(row.workflow, row.groupId) ? "checked" : ""}></td>
+      <td><span class="tl-name toggle-people-btn" data-group-id="${escapeHtml(row.groupId)}" title="${expanded ? "Hide" : "Show"} people · ${row.totalTlHeadcount} direct reports">${expanded ? "▾" : "▸"} ${escapeHtml(row.tl)} <span class="team-size">(${row.totalTlHeadcount})</span></span></td>
       <td style="text-align: center;"><span class="tag ${locationClass(row.tlLocation)}">${escapeHtml(row.tlLocation)}</span></td>
-      <td style="text-align: center;"><span class="tag ${locationClass(row.location)}">${escapeHtml(row.location)}: <b>${row.rowHeadcount}</b></span></td>
-      <td class="alerts-cell" data-group-id="${escapeHtml(row.groupId)}">${renderAlertsCell(row)}</td>
+      <td style="text-align: center;"><span class="tag ${locationClass(row.location)}">${escapeHtml(row.location)}</span></td>
+      <td class="count">${row.rowHeadcount}</td>
+      <td>${renderRowTlDropdown(row)}</td>
       <td>${renderGlDropdown(row)}</td>
       <td>${renderRowPmDropdown(row)}</td>
-      <td class="action-cell">
-        <button class="split-btn" data-group-id="${escapeHtml(row.groupId)}">Split / Reassign</button>
-      </td>
+      <td class="alerts-cell" data-group-id="${escapeHtml(row.groupId)}">${renderAlertsCell(row)}</td>
+      <td><button type="button" class="row-edit-btn lead-edit-btn" data-lead-name="${escapeHtml(row.tl)}" data-lead-emp-id="${escapeHtml(row.tlEmpId || "")}" title="Edit ${escapeHtml(row.tl)}'s alignment or Employee ID">Edit</button></td>
     </tr>${alertDetailsRow}${peopleRows}`;
 }
 function render() {
@@ -1693,60 +1900,64 @@ function render() {
     renderPmCards();
     renderGlCards();
     renderStatCards();
-    document.getElementById("app").innerHTML = `<div class="empty-state"><h2>Upload a CSV to populate the tool</h2><p>Operators and Buffers will load into the workstream tables. TL, GL, PM, MIS, and other staff rows will be preserved in the downloaded CSV.</p></div>`;
+    document.getElementById("app").innerHTML = `<div class="empty-state"><h2>Upload a CSV to Populate the Tool</h2><p>Operators will load into the workflow tables. Team Lead, Group Lead, Project Lead, MIS, and other staff rows will be preserved in the downloaded CSV.</p></div>`;
     return;
   }
-  rebuildWorkstreamPmInfo();
-  const sections = buildWorkstreamSections();
+  rebuildWorkflowPmInfo();
+  const sections = buildWorkflowSections();
   renderStats(sections);
   renderPmCards();
   renderGlCards();
   renderStatCards();
   const output = sections.map(section => {
-    const selectedCount = (selectedTlsByWorkstream[section.workstream] || []).length;
+    const selectedCount = (selectedRowsByWorkflow[section.workflow] || []).length;
     const rows = sortRows(section.rows);
     const isSplit = section.isMultiPm || section.isMultiGl;
-    const sectionStyle = isSplit ? ` style="border-color: ${section.highlightColor.border};"` : "";
-    const headerStyle = isSplit ? ` style="border-left-color: ${section.highlightColor.border}; background: ${section.highlightColor.bg};"` : "";
+    const leadIssue = hasLeadStructureIssue(section.workflow);
+    // Blue frames a table whose only problem is a Lead Structure Issue; split colors win otherwise
+    const frame = isSplit ? section.highlightColor : (leadIssue ? LEAD_ISSUE_COLOR : null);
+    const sectionStyle = frame ? ` style="border-color: ${frame.border};"` : "";
+    const headerStyle = frame ? ` style="border-left-color: ${frame.border}; background: ${frame.bg};"` : "";
     const splitBadgeStyle = isSplit ? ` style="border-color:${section.highlightColor.border}; color:${section.highlightColor.border}; background:${section.highlightColor.bg};"` : "";
-    const multiPmBadge = section.isMultiPm ? `<span class="tag"${splitBadgeStyle}>⚠ Spans multiple PMs</span>` : "";
-    const multiGlBadge = section.isMultiGl ? `<span class="tag"${splitBadgeStyle}>⚠ Spans multiple GLs</span>` : "";
+    const multiPmBadge = section.isMultiPm ? `<span class="tag"${splitBadgeStyle}>⚠ Spans Multiple Project Leads</span>` : "";
+    const multiGlBadge = section.isMultiGl ? `<span class="tag"${splitBadgeStyle}>⚠ Spans Multiple Group Leads</span>` : "";
+    const leadIssueBadge = leadIssue ? `<span class="tag" style="border-color:${LEAD_ISSUE_COLOR.border}; color:${LEAD_ISSUE_COLOR.border}; background:${LEAD_ISSUE_COLOR.bg};">⚠ Lead Structure Issue</span>` : "";
     return `
-      <section class="workstream-section"${sectionStyle}>
-        <div class="workstream-header"${headerStyle}>
+      <section class="workflow-section" data-workflow="${escapeHtml(section.workflow)}"${sectionStyle}>
+        <div class="workflow-header"${headerStyle}>
           <div>
-            <div class="ws-title">${escapeHtml(section.workstream)} <span class="workflow-bracket">[${escapeHtml(section.workflow)}]</span> ${multiPmBadge} ${multiGlBadge}</div>
+            <div class="ws-title">${escapeHtml(section.workflow)} ${multiPmBadge} ${multiGlBadge} ${leadIssueBadge}</div>
             <div class="summary-grid">
               <span class="summary-label">Summary:</span>
               <span class="tag">${section.totalAssignable} assignable</span>
-              <span class="tag">${section.tlCount} TLs</span>
+              <span class="tag">${section.tlCount} Team Leads</span>
               ${section.roleSummary}
               <span class="summary-label">Group Leads:</span>
               ${section.glSummary || "None"}
-              <span class="summary-label">PMs:</span>
+              <span class="summary-label">Project Leads:</span>
               ${section.pmSummary || "None"}
             </div>
           </div>
-          <div class="workstream-actions">
-            <span class="summary-label">TL Balance:</span>
+          <div class="workflow-actions">
+            <span class="summary-label">Team Lead Balance:</span>
             <span>${selectedCount} selected</span>
-            <button class="auto-balance-btn" data-workstream="${escapeHtml(section.workstream)}">Auto Balance Selected TLs</button>
-            <button class="clear-selection-btn" data-workstream="${escapeHtml(section.workstream)}">Clear</button>
+            <button class="auto-balance-btn" data-workflow="${escapeHtml(section.workflow)}">Auto Balance Selected Team Leads</button>
+            <button class="clear-selection-btn" data-workflow="${escapeHtml(section.workflow)}">Clear</button>
           </div>
         </div>
         <div class="table-wrap">
           <table>
             <thead><tr>
               <th style="width: 34px;">Sel</th>
-              <th class="sortable" data-sort-key="role" style="width: 90px;">${sortLabel("role", "Role")}</th>
-              <th class="sortable" data-sort-key="tl" style="width: 240px;">${sortLabel("tl", "TL")}</th>
-              <th class="sortable" data-sort-key="totalTlHeadcount" style="width: 75px;">${sortLabel("totalTlHeadcount", "TL HC")}</th>
-              <th class="sortable" data-sort-key="tlLocation" style="width: 90px;">${sortLabel("tlLocation", "TL Location")}</th>
-              <th class="sortable" data-sort-key="opLocation" style="width: 100px;">${sortLabel("opLocation", "OP/Buffer Location")}</th>
+              <th class="sortable" data-sort-key="tl" style="width: 220px;" title="Click to sort by name, then by direct reports">${nameSortLabel()}</th>
+              <th class="sortable" data-sort-key="tlLocation" style="width: 100px;">${sortLabel("tlLocation", "Team Lead Location")}</th>
+              <th class="sortable" data-sort-key="opLocation" style="width: 100px;">${sortLabel("opLocation", "Operator Location")}</th>
+              <th class="sortable" data-sort-key="rowHeadcount" style="width: 80px;">${sortLabel("rowHeadcount", "Operator Count")}</th>
+              <th style="width: 150px;">Team Lead</th>
+              <th class="sortable" data-sort-key="gl" style="width: 150px;">${sortLabel("gl", "Group Lead")}</th>
+              <th class="sortable" data-sort-key="pm" style="width: 150px;">${sortLabel("pm", "Project Lead")}</th>
               <th style="width: 380px;">Alerts</th>
-              <th class="sortable" data-sort-key="gl" style="width: 150px;">${sortLabel("gl", "L1")}</th>
-              <th class="sortable" data-sort-key="pm" style="width: 150px;">${sortLabel("pm", "L2")}</th>
-              <th style="width: 120px;">Action</th>
+              <th style="width: 50px;"></th>
             </tr></thead>
             <tbody>${rows.map(renderRow).join("")}</tbody>
           </table>
@@ -1762,9 +1973,9 @@ function openSplitDialog(groupId) {
   document.getElementById("splitCount").min = 1;
   document.getElementById("splitCount").max = row.rowHeadcount;
   document.getElementById("splitCount").value = row.rowHeadcount;
-  const tls = uniqueSorted(people.map(p => p.tl || "Unassigned TL")).filter(tl => tl !== row.tl);
+  const tls = uniqueSorted(people.map(p => p.tl || "Unassigned Team Lead")).filter(tl => tl !== row.tl);
   document.getElementById("targetTl").innerHTML = tls.map(tl => `<option value="${escapeHtml(tl)}">${escapeHtml(tl)}</option>`).join("");
-  document.getElementById("splitDetails").innerHTML = `<b>${escapeHtml(row.workstream)}</b><br>Role: ${escapeHtml(row.role)}<br>Workflow: ${escapeHtml(row.workflow)}<br>Current TL: ${escapeHtml(row.tl)}<br>Location: ${escapeHtml(row.location)}<br>Available row headcount: ${row.rowHeadcount}`;
+  document.getElementById("splitDetails").innerHTML = `<b>${escapeHtml(row.workflow)}</b><br>Role: ${escapeHtml(row.role)}<br>Current Team Lead: ${escapeHtml(row.tl)}<br>Location: ${escapeHtml(row.location)}<br>Available row headcount: ${row.rowHeadcount}`;
   document.getElementById("splitDialog").showModal();
 }
 function applySplit() {
@@ -1772,7 +1983,7 @@ function applySplit() {
   if (!row) return;
   const count = Number(document.getElementById("splitCount").value);
   const targetTl = document.getElementById("targetTl").value;
-  if (!targetTl || targetTl === row.tl) { alert("Choose a different TL."); return; }
+  if (!targetTl || targetTl === row.tl) { alert("Choose a different Team Lead."); return; }
   if (!Number.isInteger(count) || count < 1 || count > row.rowHeadcount) { alert(`Enter a headcount between 1 and ${row.rowHeadcount}.`); return; }
   pushUndoSnapshot();
   const targetInfo = getTlLocation(targetTl);
@@ -1793,8 +2004,8 @@ function moveWholeRowToTarget(sourceGroupId, targetGroupId) {
   const source = buildRows().find(r => r.groupId === sourceGroupId);
   const target = buildRows().find(r => r.groupId === targetGroupId);
   if (!source || !target || source.groupId === target.groupId) return;
-  if (source.workstream !== target.workstream) {
-    alert("Rows can only be dragged into another row within the same Primary Workstream.");
+  if (source.workflow !== target.workflow) {
+    alert("Rows can only be dragged into another row within the same Primary Workflow.");
     return;
   }
   pushUndoSnapshot();
@@ -1811,23 +2022,26 @@ function moveWholeRowToTarget(sourceGroupId, targetGroupId) {
   });
   render();
 }
-function setTlSelection(workstream, tl, selected) {
-  if (!selectedTlsByWorkstream[workstream]) selectedTlsByWorkstream[workstream] = [];
-  const current = new Set(selectedTlsByWorkstream[workstream]);
-  if (selected) current.add(tl);
-  else current.delete(tl);
-  selectedTlsByWorkstream[workstream] = [...current].sort((a, b) => a.localeCompare(b));
+// Selection is per row (one Team Lead at one location), not every row for that Team Lead
+function setRowSelection(workflow, groupId, selected) {
+  const current = new Set(selectedRowsByWorkflow[workflow] || []);
+  if (selected) current.add(groupId);
+  else current.delete(groupId);
+  selectedRowsByWorkflow[workflow] = [...current];
   render();
 }
-function clearSelection(workstream) {
-  selectedTlsByWorkstream[workstream] = [];
+function clearSelection(workflow) {
+  selectedRowsByWorkflow[workflow] = [];
   render();
 }
-function autoBalanceSelected(workstream) {
-  const selectedTls = selectedTlsByWorkstream[workstream] || [];
-  if (selectedTls.length < 2) { alert("Select at least two TLs in this workstream to auto balance."); return; }
-  const selectedPeople = people.filter(p => (p.workstream || "Unassigned Workstream") === workstream && selectedTls.includes(p.tl || "Unassigned TL"));
-  if (!selectedPeople.length) { alert("No Operators or Buffers found for the selected TLs in this workstream."); return; }
+function autoBalanceSelected(workflow) {
+  // Balance only the people in the selected rows, evening them out across those rows' Team Leads
+  const selectedIds = selectedRowsByWorkflow[workflow] || [];
+  const selectedRows = buildRows().filter(r => r.workflow === workflow && selectedIds.includes(r.groupId));
+  const selectedTls = uniqueSorted(selectedRows.map(r => r.tl));
+  if (selectedTls.length < 2) { alert("Select rows for at least two different Team Leads in this workflow to auto balance."); return; }
+  const selectedPeople = selectedRows.flatMap(r => r.people);
+  if (!selectedPeople.length) { alert("No Operators found in the selected rows."); return; }
   pushUndoSnapshot();
   const total = selectedPeople.length;
   const base = Math.floor(total / selectedTls.length);
@@ -1835,7 +2049,7 @@ function autoBalanceSelected(workstream) {
   const targetCounts = {};
   selectedTls.forEach((tl, index) => targetCounts[tl] = base + (index < remainder ? 1 : 0));
   const byTl = {};
-  selectedTls.forEach(tl => byTl[tl] = selectedPeople.filter(p => (p.tl || "Unassigned TL") === tl));
+  selectedTls.forEach(tl => byTl[tl] = selectedPeople.filter(p => (p.tl || "Unassigned Team Lead") === tl));
   const over = [];
   const under = [];
   selectedTls.forEach(tl => {
@@ -1865,6 +2079,7 @@ function autoBalanceSelected(workstream) {
       if (!donor.people.length || donor.extra <= 0) overIndex += 1;
     }
   }
+  selectedRowsByWorkflow[workflow] = []; // rows regroup after moving people, so start fresh
   render();
 }
 function updateTlRowsForExport() {
@@ -1938,19 +2153,40 @@ document.getElementById("fileUpload").addEventListener("change", handleFileUploa
 document.getElementById("downloadBtn").addEventListener("click", downloadAssignments);
 document.getElementById("cancelSplit").addEventListener("click", () => document.getElementById("splitDialog").close());
 document.getElementById("confirmSplit").addEventListener("click", applySplit);
+document.getElementById("cancelLead").addEventListener("click", () => document.getElementById("leadDialog").close());
+document.getElementById("saveLead").addEventListener("click", saveLeadEdit);
+document.addEventListener("click", event => {
+  const editLead = event.target.closest(".lead-edit-btn");
+  if (editLead) { openLeadDialog(editLead.dataset.leadName, editLead.dataset.leadEmpId); return; }
+  const jump = event.target.closest(".wf-jump");
+  if (!jump) return;
+  let workflow = jump.dataset.workflow;
+  if (jump.dataset.workflows) {
+    const list = jump.dataset.workflows.split("|");
+    const next = Number(jump.dataset.next || 0);
+    workflow = list[next % list.length];
+    jump.dataset.next = String((next + 1) % list.length);
+  }
+  const target = [...document.querySelectorAll(".workflow-section")].find(el => el.dataset.workflow === workflow);
+  if (!target) return;
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+  target.classList.remove("jump-flash");
+  void target.offsetWidth; // restart the flash if the same workflow is clicked again
+  target.classList.add("jump-flash");
+});
 document.getElementById("app").addEventListener("click", event => {
   const splitButton = event.target.closest(".split-btn");
   if (splitButton) openSplitDialog(splitButton.dataset.groupId);
   const sortHeader = event.target.closest("th.sortable");
   if (sortHeader) setSort(sortHeader.dataset.sortKey);
   const balanceButton = event.target.closest(".auto-balance-btn");
-  if (balanceButton) autoBalanceSelected(balanceButton.dataset.workstream);
+  if (balanceButton) autoBalanceSelected(balanceButton.dataset.workflow);
   const clearButton = event.target.closest(".clear-selection-btn");
-  if (clearButton) clearSelection(clearButton.dataset.workstream);
+  if (clearButton) clearSelection(clearButton.dataset.workflow);
   const toggleButton = event.target.closest(".toggle-people-btn");
   if (toggleButton) togglePeopleExpand(toggleButton.dataset.groupId);
   const alertTagClick = event.target.closest(".alerts-cell .tag");
-  if (alertTagClick) {
+  if (alertTagClick && !alertTagClick.classList.contains("wf-jump")) {
     const alertsCell = alertTagClick.closest(".alerts-cell");
     toggleAlertDetails(alertsCell.dataset.groupId, alertTagClick.dataset.alertIndex);
   }
@@ -1961,13 +2197,15 @@ document.getElementById("app").addEventListener("dblclick", event => {
 });
 document.getElementById("app").addEventListener("change", event => {
   const checkbox = event.target.closest(".tl-select");
-  if (checkbox) setTlSelection(checkbox.dataset.workstream, checkbox.dataset.tl, checkbox.checked);
+  if (checkbox) setRowSelection(checkbox.dataset.workflow, checkbox.dataset.groupId, checkbox.checked);
   const glSelect = event.target.closest(".row-gl-select");
   if (glSelect && glSelect.value !== "__KEEP__") applyRowGl(glSelect.dataset.groupId, glSelect.value);
   const personGlSelect = event.target.closest(".person-gl-select");
   if (personGlSelect) applyPersonGl(personGlSelect.dataset.personIdx, personGlSelect.value);
   const personTlSelect = event.target.closest(".person-tl-select");
   if (personTlSelect) applyPersonTl(personTlSelect.dataset.personIdx, personTlSelect.value);
+  const rowTlSelect = event.target.closest(".row-tl-select");
+  if (rowTlSelect) applyRowTl(rowTlSelect.dataset.groupId, rowTlSelect.value);
   const rowPmSelect = event.target.closest(".row-pm-select");
   if (rowPmSelect) applyRowPm(rowPmSelect.dataset.groupId, rowPmSelect.value);
 });
@@ -2010,6 +2248,12 @@ document.addEventListener("keydown", event => {
   }
 });
 render();
+// Start with the sample roster loaded so there's something to explore right away
+if (window.SAMPLE_TEAM_LIST_CSV) {
+  parseAndLoad(window.SAMPLE_TEAM_LIST_CSV, "sample_team_list.csv");
+  const status = document.getElementById("uploadStatus");
+  status.textContent = "Showing sample data (made-up names). Upload your own CSV to replace it. " + status.textContent;
+}
 </script>
 </body>
 </html>
